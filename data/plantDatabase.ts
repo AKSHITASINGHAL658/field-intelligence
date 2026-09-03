@@ -53,3 +53,6 @@ export const plants: Plant[] = [
 
   // Add plant-03 through plant-07
 ];
+export function getPlantById(id: string) {
+  return plants.find((plant) => plant.id === id);
+}
