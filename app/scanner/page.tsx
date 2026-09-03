@@ -1,5 +1,4 @@
 "use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -15,7 +14,6 @@ import {
 } from "lucide-react";
 import { classifyAndIdentify } from "@/lib/plantClassifier";
 import { ClassifyResponse } from "@/types/api";
-
 type Phase =
   | "choose"
   | "camera-starting"
@@ -23,7 +21,6 @@ type Phase =
   | "camera-error"
   | "scanning"
   | "result";
-
 export default function ScannerPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const captureCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,7 +31,6 @@ export default function ScannerPage() {
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [result, setResult] = useState<ClassifyResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   // Stop the camera whenever we're not actively using it (unmount, or
   // leaving camera mode) so it isn't left running in the background.
   useEffect(() => {
@@ -386,7 +382,7 @@ function ChatPanel({ plantId }: { plantId: string }) {
   return (
     <div className="mt-6 w-full rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="border-b border-zinc-200 px-4 py-3 text-sm font-medium text-zinc-900 dark:border-zinc-800 dark:text-zinc-100">
-        Ask about this plant
+        AI Botanical Guide
       </div>
 
       {messages.length > 0 && (

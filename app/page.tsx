@@ -54,7 +54,7 @@ export default function Home() {
           />
           <Feature
             icon={<MessageCircle className="h-5 w-5 text-emerald-600" />}
-            title="Ask about it"
+            title="AI Botanical Guide"
             description="Chat about the identified plant — habitat, threats, and more."
           />
         </div>
