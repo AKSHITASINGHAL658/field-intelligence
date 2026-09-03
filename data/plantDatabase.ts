@@ -3,55 +3,123 @@ import { Plant } from "@/types/plant";
 export const plants: Plant[] = [
   {
     id: "plant-01",
-    commonName: "Plant One",
-    scientificName: "Scientific name pending",
-    family: "Family pending",
-
-    nativeRegion: "India",
+    commonName: "Silver Yucca",
+    scientificName: "Yucca rostrata",
+    family: "Asparagaceae",
+    nativeRegion: "Northern Mexico and Texas",
     endemic: false,
-
-    conservationStatus: "Data pending",
-
+    conservationStatus: "Least Concern",
     habitat: "Campus",
-    ecologicalImportance: "Information pending",
-
-    threats: [],
-    conservationActions: [],
-
-    identificationClues: [],
-
+    ecologicalImportance: "Highly drought-tolerant, provides structural habitat for small reptiles and attracts specialized yucca moths for pollination.",
+    threats: ["Root rot from poor drainage", "Overwatering in landscape settings"],
+    conservationActions: ["Plant in well-draining soil", "Avoid overhead irrigation"],
+    identificationClues: ["Striking rosette of stiff, silvery-blue sword-like leaves", "Forms a distinct trunk as it matures", "Produces tall spikes of white bell-shaped flowers"],
     latitude: 12.9698,
     longitude: 79.1559,
-
-    image: "/plants/plant-01.jpg",
+    image: "/plants/plant-01.jpg"
   },
-
   {
     id: "plant-02",
-    commonName: "Plant Two",
-    scientificName: "Scientific name pending",
-    family: "Family pending",
-
-    nativeRegion: "India",
+    commonName: "Broadleaf Lady Palm",
+    scientificName: "Rhapis excelsa",
+    family: "Arecaceae",
+    nativeRegion: "Southern China and Taiwan",
     endemic: false,
-
-    conservationStatus: "Data pending",
-
+    conservationStatus: "Not Evaluated",
     habitat: "Campus",
-    ecologicalImportance: "Information pending",
-
-    threats: [],
-    conservationActions: [],
-
-    identificationClues: [],
-
-    latitude: 12.9705,
-    longitude: 79.1565,
-
-    image: "/plants/plant-02.jpg",
+    ecologicalImportance: "Excellent air purifier, provides dense sheltered microhabitats for insects and small campus fauna in shaded areas.",
+    threats: ["Spider mites in dry conditions", "Leaf scorch from direct, harsh sunlight"],
+    conservationActions: ["Plant in shaded or understory areas", "Maintain soil moisture without waterlogging"],
+    identificationClues: ["Deeply divided, palmate fan-like leaves with blunt tips", "Clumping, bamboo-like slender canes covered in woven brown fibers"],
+    latitude: 12.9698,
+    longitude: 79.1559,
+    image: "/plants/plant-02.jpg"
   },
-
-  // Add plant-03 through plant-07
+  {
+    id: "plant-03",
+    commonName: "Dinner Plate Aralia",
+    scientificName: "Polyscias scutellaria",
+    family: "Araliaceae",
+    nativeRegion: "Southwest Pacific Islands",
+    endemic: false,
+    conservationStatus: "Not Evaluated",
+    habitat: "Campus",
+    ecologicalImportance: "Serves as an effective ornamental hedge that stabilizes soil and provides shade cover in cultivated garden beds.",
+    threats: ["Mealybugs", "Aphids", "Extreme cold or drafty conditions"],
+    conservationActions: ["Monitor regularly for pests", "Prune selectively to maintain airflow"],
+    identificationClues: ["Large, rounded, dark green leaves resembling dinner plates", "Scalloped leaf margins", "Woody, upright branching structure"],
+    latitude: 12.9698,
+    longitude: 79.1559,
+    image: "/plants/plant-03.jpg"
+  },
+  {
+    id: "plant-04",
+    commonName: "Cast Iron Plant",
+    scientificName: "Aspidistra elatior",
+    family: "Asparagaceae",
+    nativeRegion: "Japan and Taiwan",
+    endemic: false,
+    conservationStatus: "Least Concern",
+    habitat: "Campus",
+    ecologicalImportance: "Thrives in deep shade where other plants fail, acting as a reliable ground cover that prevents soil erosion.",
+    threats: ["Overwatering", "Fungal leaf spots", "Slugs and snails"],
+    conservationActions: ["Allow soil to dry slightly between waterings", "Protect from direct midday sun"],
+    identificationClues: ["Tough, leathery, dark green lance-shaped leaves", "Grows directly from underground rhizomes", "Small, inconspicuous purple flowers bloom at the soil line"],
+    latitude: 12.9698,
+    longitude: 79.1559,
+    image: "/plants/plant-04.jpg"
+  },
+  {
+    id: "plant-05",
+    commonName: "Plumeria / Frangipani",
+    scientificName: "Plumeria rubra",
+    family: "Apocynaceae",
+    nativeRegion: "Mexico, Central America, and the Caribbean",
+    endemic: false,
+    conservationStatus: "Least Concern",
+    habitat: "Campus",
+    ecologicalImportance: "Highly fragrant flowers attract sphinx moths and other nocturnal pollinators, despite containing no nectar (deceptive pollination).",
+    threats: ["Plumeria rust (fungal disease)", "Stem rot", "Whiteflies"],
+    conservationActions: ["Ensure full sun exposure for healthy growth", "Remove and destroy leaves infected with rust"],
+    identificationClues: ["Thick, fleshy, succulent-like branches", "Bleeds a white, milky latex sap when broken", "Fragrant, five-petaled pinwheel flowers"],
+    latitude: 12.9698,
+    longitude: 79.1559,
+    image: "/plants/plant-05.jpg"
+  },
+  {
+    id: "plant-06",
+    commonName: "Tuberous Sword Fern",
+    scientificName: "Nephrolepis cordifolia",
+    family: "Nephrolepidaceae",
+    nativeRegion: "South India (and other tropical regions)",
+    endemic: false,
+    conservationStatus: "Least Concern",
+    habitat: "Campus",
+    ecologicalImportance: "Provides dense ground cover and retains soil moisture; however, it can become aggressive and outcompete weaker native flora.",
+    threats: ["Drought", "Prolonged exposure to direct, intense sunlight"],
+    conservationActions: ["Control spread in garden beds via rhizome management", "Maintain consistent soil moisture"],
+    identificationClues: ["Upright, bright green pinnate fronds resembling a fishbone", "Produces distinct, fuzzy, spherical underground tubers (unlike true Boston ferns)"],
+    latitude: 12.9698,
+    longitude: 79.1559,
+    image: "/plants/plant-06.jpg"
+  },
+  {
+    id: "plant-07",
+    commonName: "Garari / Oduvan",
+    scientificName: "Cleistanthus collinus",
+    family: "Phyllanthaceae",
+    nativeRegion: "South India",
+    endemic: true,
+    conservationStatus: "Not Evaluated (Locally common)",
+    habitat: "Campus",
+    ecologicalImportance: "Hardy native species adapted to dry deciduous zones; naturally resistant to grazing due to high toxicity, supporting scrubland ecosystems.",
+    threats: ["Land clearing for urban development", "Removal due to its toxic nature"],
+    conservationActions: ["Retain in peripheral, low-traffic scrub areas of the campus", "Install warning signs if planted near accessible paths"],
+    identificationClues: ["Small deciduous tree or large shrub", "Simple, alternate, ovate leaves with a leathery texture", "Woody capsules that split open when dry; all parts of the plant are highly toxic"],
+    latitude: 12.9698,
+    longitude: 79.1559,
+    image: "/plants/plant-07.jpg"
+  }
 ];
 export function getPlantById(id: string) {
   return plants.find((plant) => plant.id === id);
