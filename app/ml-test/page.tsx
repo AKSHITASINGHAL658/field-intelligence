@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { classifyImage } from "@/lib/plantClassifier";
+import {
+  classifyImage,
+  ClassificationResult,
+} from "@/lib/plantClassifier";
 
 export default function MLTestPage() {
 
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ClassificationResult | null>(null);
 
   async function handleImage(
     event: React.ChangeEvent<HTMLInputElement>

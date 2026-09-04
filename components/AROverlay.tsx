@@ -1,13 +1,11 @@
-// components/AROverlay.tsx
 "use client";
 
-import React from "react";
 import { Plant } from "@/types/plant";
 import { Leaf, Globe, ShieldAlert, Sparkles, X } from "lucide-react";
 
 interface AROverlayProps {
   plant: Plant;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export function AROverlay({ plant, onClose }: AROverlayProps) {
@@ -23,13 +21,15 @@ export function AROverlay({ plant, onClose }: AROverlayProps) {
           AR TARGET LOCKED
         </div>
 
-        <button
-          onClick={onClose}
-          className="pointer-events-auto backdrop-blur-md bg-black/60 border border-white/20 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
-          aria-label="Close AR view"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="pointer-events-auto backdrop-blur-md bg-black/60 border border-white/20 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+            aria-label="Close AR view"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Center Target Reticle */}
@@ -42,7 +42,7 @@ export function AROverlay({ plant, onClose }: AROverlayProps) {
 
       {/* AR HUD Card: Contextual Info Overlay */}
       <div className="pointer-events-auto backdrop-blur-xl bg-zinc-950/85 border border-emerald-500/30 rounded-2xl p-4 text-white shadow-2xl space-y-3 transform transition-all duration-300">
-        {/* Names & Plant Family */}
+        {/* Scientific Name, Common Name & Plant Family */}
         <div className="flex justify-between items-start border-b border-zinc-800 pb-2.5">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-emerald-400 flex items-center gap-1.5">
