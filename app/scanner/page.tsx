@@ -6,6 +6,7 @@ import Image from "next/image";
 import { AROverlay } from "@/components/AROverlay";
 import { Plant } from "@/types/plant";
 import { plants } from "@/data/plantDatabase";
+import { useExplorerStore } from "@/lib/useExplorerStore";
 import {
   ArrowLeft,
   Camera,
@@ -35,6 +36,8 @@ export default function ScannerPage() {
   >([]);
   const [chatInput, setChatInput] = useState("");
   const [isAskingBot, setIsAskingBot] = useState(false);
+
+  const { addScanXp } = useExplorerStore();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -81,10 +84,8 @@ export default function ScannerPage() {
   const processScan = async () => {
     setPhase("processing");
 
-    // Process on-device scanning and retrieve verified plant metadata directly
     setTimeout(() => {
       try {
-        // Match plant directly from database or fallback to first database record
         const samplePlant: Plant = plants[0] || {
           id: "cleistanthus-collinus",
           commonName: "Garari / Oduvan",
@@ -102,6 +103,9 @@ export default function ScannerPage() {
           confidence: 0.96,
           plant: samplePlant,
         });
+
+        // Award XP using the explorer store
+        addScanXp(samplePlant.endemic);
         setPhase("result");
       } catch (err) {
         console.error("Identification failed:", err);
@@ -165,26 +169,26 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50 dark:bg-black min-h-screen text-zinc-900 dark:text-zinc-100 p-4 md:p-6">
+    <div className="flex flex-1 flex-col bg-zinc-950 min-h-screen text-zinc-100 p-4 md:p-6 font-sans">
       {/* Top Header */}
       <header className="flex items-center justify-between max-w-4xl w-full mx-auto mb-6">
         <Link
           href="/"
-          className="flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-emerald-500 transition-colors"
+          className="flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-emerald-400 transition-colors bg-zinc-900 px-3 py-1.5 rounded-xl border border-zinc-800"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
-        <div className="flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase">
-            ONNX Engine Ready
+        <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full">
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[10px] font-mono text-emerald-300 uppercase tracking-wider">
+            AR Engine Active
           </span>
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Scanner Area */}
       <main className="max-w-4xl w-full mx-auto flex flex-col items-center gap-6">
-        {/* Camera / Upload Viewport Container */}
+        {/* Camera/Upload Frame Viewport */}
         <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl flex items-center justify-center">
           {/* Live Video Stream */}
           <video
@@ -208,47 +212,51 @@ export default function ScannerPage() {
             />
           )}
 
-          {/* Idle Prompt Placeholder */}
+          {/* Idle Placeholder */}
           {phase === "idle" && !selectedImage && (
-            <div className="flex flex-col items-center text-center p-6 text-zinc-500">
-              <Leaf className="w-12 h-12 text-zinc-700 mb-3 animate-bounce" />
-              <p className="text-sm font-medium">No Image or Video Feed</p>
-              <p className="text-xs text-zinc-600 mt-1">
-                Start live camera or upload an image to begin AR species analysis.
+            <div className="flex flex-col items-center text-center p-6 text-zinc-500 space-y-3">
+              <div className="p-4 bg-zinc-800/80 rounded-2xl border border-zinc-700/50">
+                <Leaf className="w-10 h-10 text-emerald-400 animate-pulse" />
+              </div>
+              <p className="text-sm font-semibold text-zinc-300">
+                Ready for Field Analysis
+              </p>
+              <p className="text-xs text-zinc-500 max-w-xs">
+                Launch live camera mode or select an existing plant photograph to run real-time botanical classification.
               </p>
             </div>
           )}
 
-          {/* Processing Overlay */}
+          {/* Processing Screen Overlay */}
           {phase === "processing" && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white gap-3 z-20">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-md flex flex-col items-center justify-center text-white gap-3 z-20">
               <LoaderCircle className="w-8 h-8 text-emerald-400 animate-spin" />
               <span className="text-xs font-mono tracking-widest text-emerald-400 uppercase">
-                Analyzing Frame & Context...
+                Extracting Botanical Features...
               </span>
             </div>
           )}
 
-          {/* AR Overlay (Triggered automatically when a plant is detected) */}
+          {/* AR Target Overlay */}
           {phase === "result" && result?.success && result.plant && (
             <AROverlay plant={result.plant} onClose={resetAll} />
           )}
         </div>
 
-        {/* Action Control Panel */}
+        {/* Action Panel */}
         <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-md">
           {phase === "idle" && (
             <>
               <button
                 onClick={startCamera}
-                className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all shadow-lg"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black text-xs font-extrabold py-3.5 px-4 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
               >
-                <Camera className="w-4 h-4" /> Use Live Camera
+                <Camera className="w-4 h-4" /> Live Camera
               </button>
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm font-semibold py-3 px-4 rounded-xl transition-all border border-zinc-700"
+                className="flex-1 flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs font-bold py-3.5 px-4 rounded-xl transition-all border border-zinc-800"
               >
                 <Upload className="w-4 h-4" /> Upload Image
               </button>
@@ -266,7 +274,7 @@ export default function ScannerPage() {
           {(phase === "camera-live" || (selectedImage && phase === "idle")) && (
             <button
               onClick={processScan}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm py-3 px-4 rounded-xl transition-all shadow-xl"
+              className="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs py-3.5 px-4 rounded-xl transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)]"
             >
               <Sparkles className="w-4 h-4" /> Scan & Analyze Species
             </button>
@@ -275,18 +283,18 @@ export default function ScannerPage() {
           {phase === "result" && (
             <button
               onClick={resetAll}
-              className="w-full flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold py-3 px-4 rounded-xl transition-all border border-zinc-700"
+              className="w-full flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold py-3.5 px-4 rounded-xl transition-all border border-zinc-800"
             >
               <RotateCcw className="w-4 h-4" /> Scan Another Species
             </button>
           )}
         </div>
 
-        {/* Botanical Context Assistant */}
+        {/* Botanical Assistant RAG Box */}
         {result?.success && result.plant && (
-          <section className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-4 mt-2 space-y-3">
+          <section className="w-full max-w-md bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 space-y-3 shadow-xl">
             <h3 className="text-xs font-mono uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> Botanical RAG Assistant
+              <Sparkles className="w-3.5 h-3.5" /> Botanical Assistant
             </h3>
 
             <div className="max-h-48 overflow-y-auto space-y-2 pr-1 text-xs">
@@ -321,7 +329,7 @@ export default function ScannerPage() {
               <button
                 type="submit"
                 disabled={isAskingBot}
-                className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white p-2 rounded-xl transition-colors"
+                className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black p-2 rounded-xl transition-colors font-bold"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
