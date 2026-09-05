@@ -22,4 +22,5 @@ export interface Plant {
   longitude: number;
 
   image: string;
+  imageUrl?: string;
 }
