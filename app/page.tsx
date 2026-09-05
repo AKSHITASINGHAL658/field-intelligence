@@ -1,228 +1,124 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { Camera, Check, Lock, Star, HelpCircle, ArrowRight, ClipboardList, Layers } from "lucide-react";
-import { AppShell } from "@/components/layout/AppShell";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Lock, User, Key, ArrowRight, ShieldCheck } from "lucide-react";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
-import { SpecimenCard } from "@/components/collection/SpecimenCard";
-import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
-import { ConservationSection } from "@/components/home/ConservationSection";
-import { useExplorerStore } from "@/lib/useExplorerStore";
-import { plants } from "@/data/plantDatabase";
 
-export default function HomePage() {
-  const { isHydrated, discovered, discoveredCount, totalCatalogCount, exp, isDiscovered } =
-    useExplorerStore();
+export default function LoginPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  const unchartedCount = totalCatalogCount - discoveredCount;
-  const progressPercent = totalCatalogCount > 0 ? (discoveredCount / totalCatalogCount) * 100 : 0;
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAuthenticating(true);
 
-  // Recent discoveries list — most recently observed first
-  const discoveredPlants = plants
-    .filter((p) => isDiscovered(p.id))
-    .sort((a, b) => {
-      const aTime = discovered[a.id]?.lastObservedAt ?? "";
-      const bTime = discovered[b.id]?.lastObservedAt ?? "";
-      return bTime.localeCompare(aTime);
-    });
+    // Simulate a brief authentication delay,
+    // then route directly to the home page.
+    setTimeout(() => {
+      router.push("/home");
+    }, 1200);
+  };
 
   return (
-    <AppShell>
-      <div className="max-w-md mx-auto px-4 py-5 space-y-5 md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8">
-      <div className="space-y-5 lg:space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0 lg:items-start">
-      <div className="lg:col-span-2 space-y-5 lg:space-y-6">
-        {/* 1. Sprout-OS Field Companion Card */}
-        <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 lg:p-7 shadow-xl space-y-4">
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-sm bg-emerald-400" />
-              SPROUT-OS // V2.4 FIELD COMPANION
-            </span>
-            <span className="text-[10px] font-bold bg-[#141B22] text-zinc-400 px-2 py-0.5 rounded-full border border-[#1E2732]">
-              BIOZONE-07
-            </span>
-          </div>
+    <main className="min-h-screen flex items-center justify-center bg-[#06080A] p-4 relative overflow-hidden">
+      {/* Background Decorative Grid */}
+      <div className="absolute inset-0 scanner-grid opacity-30 pointer-events-none" />
+      
+      <div className="w-full max-w-sm relative z-10 animate-reveal-in">
+        <div className="rounded-3xl bg-[#0C1015] border border-[#1E2732] shadow-2xl overflow-hidden relative">
+          
+          {/* Subtle top glowing accent */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
 
-          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-[#080D11] border border-[#171F28]">
-            <div className="p-1 rounded-xl bg-[#0C1015] border border-emerald-500/30 flex-shrink-0">
-              <PixelMascot size={48} expression={discoveredCount > 0 ? "happy" : "curious"} />
+          <div className="p-6 sm:p-8 space-y-6">
+            
+            {/* Header / Identity */}
+            <div className="text-center space-y-3">
+              <div className="inline-flex p-3 rounded-2xl bg-[#080D11] border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                <PixelMascot size={48} expression={isAuthenticating ? "analyzing" : "curious"} />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
+                  <Lock className="w-4 h-4 text-emerald-400" />
+                  WELCOME BACK
+                </h1>
+                <p className="text-[10px] font-mono text-zinc-400 tracking-widest uppercase">
+                  Please sign in to continue
+                </p>
+              </div>
             </div>
-            <div className="space-y-1 text-xs">
-              <p className="font-bold text-white flex items-center gap-1">
-                WELCOME BACK, RESEARCHER! 🐸
-              </p>
-              <p className="text-zinc-400 leading-relaxed text-[11px]">
-                {isHydrated && discoveredCount === 0
-                  ? "Field station initialized. 7 uncharted botanical taxa await your first scan."
-                  : `Ready for field work? ${unchartedCount} uncharted botanical taxa await identification in the campus flora zone.`}
-              </p>
-            </div>
-          </div>
 
-          <Link
-            href="/scanner"
-            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.35)]"
-          >
-            <Camera className="w-4 h-4" /> [ 📷 SCAN SPECIMEN ]
-          </Link>
-        </section>
+            {/* Pixel Divider */}
+            <div className="pixel-divider text-[#1E2732] w-full" />
 
-        {/* 2. Expedition Progress & Telemetry */}
-        <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 shadow-xl space-y-4 text-left">
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-zinc-500 uppercase tracking-wider font-bold">
-              BIO-SURVEY TELEMETRY
-            </span>
-            <span className="text-emerald-400 font-bold">
-              {isHydrated ? `${discoveredCount} / ${totalCatalogCount}` : "0 / 7"}{" "}
-              <span className="text-zinc-500 font-normal">
-                {isHydrated ? `${progressPercent.toFixed(1)}% INDEXED` : "0% INDEXED"}
-              </span>
-            </span>
-          </div>
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-4">
+              
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <User className="w-3 h-3" /> Username
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  disabled={isAuthenticating}
+                  className="w-full bg-[#080D11] border border-[#1E2732] rounded-xl pl-3 pr-4 py-3 text-xs text-white font-mono placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-all disabled:opacity-50"
+                />
+              </div>
 
-          <h3 className="text-base font-bold text-white tracking-tight">
-            CAMPUS EXPEDITION PROGRESS
-          </h3>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Key className="w-3 h-3" /> Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  disabled={isAuthenticating}
+                  className="w-full bg-[#080D11] border border-[#1E2732] rounded-xl pl-3 pr-4 py-3 text-xs text-white font-mono placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition-all disabled:opacity-50"
+                />
+              </div>
 
-          {/* 7 Specimen Checkmark / Lock Blocks */}
-          <div className="grid grid-cols-7 gap-1.5">
-            {plants.map((plant, index) => {
-              const unlocked = isDiscovered(plant.id);
-              return (
-                <div
-                  key={plant.id}
-                  className={`h-9 rounded-xl flex items-center justify-center text-xs font-mono transition-all ${
-                    unlocked
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
-                      : "bg-[#090D11] text-zinc-600 border border-[#171F28]"
-                  }`}
-                  title={unlocked ? plant.commonName : `Specimen #${index + 1} (Uncharted)`}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isAuthenticating || !username || !password}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs font-mono uppercase tracking-wider transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.25)] disabled:opacity-60 disabled:active:scale-100 disabled:shadow-none"
                 >
-                  {unlocked ? <Check className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5" />}
-                </div>
-              );
-            })}
-          </div>
+                  {isAuthenticating ? (
+                    <>
+                      <span className="animate-pulse flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4" /> SIGNING IN...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      SIGN IN <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
 
-          {/* 3 Metric Stat Boxes */}
-          <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-            <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732]">
-              <Layers className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-              <div className="text-base font-bold text-white font-mono">
-                {isHydrated ? discoveredCount : 0}
-              </div>
-              <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
-                DISCOVERED
-              </div>
+            {/* Bottom Info */}
+            <div className="pt-4 text-center">
+              <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest flex justify-center items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/50 animate-pulse-gentle" />
+                SECURE CONNECTION
+              </span>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732]">
-              <HelpCircle className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
-              <div className="text-base font-bold text-white font-mono">
-                {isHydrated ? unchartedCount : totalCatalogCount}
-              </div>
-              <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
-                UNCHARTED
-              </div>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732]">
-              <Star className="w-4 h-4 text-amber-400 mx-auto mb-1" />
-              <div className="text-base font-bold text-amber-400 font-mono">
-                {isHydrated ? exp : 0}
-              </div>
-              <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
-                FIELD EXP
-              </div>
-            </div>
           </div>
-        </section>
+        </div>
       </div>
-
-      <div className="space-y-5 lg:space-y-6 lg:col-span-1">
-        {/* 3. Recent Specimen Discoveries */}
-        <RevealOnScroll>
-        <section className="space-y-3 text-left">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-sm bg-emerald-400" />
-              RECENT SPECIMEN DISCOVERIES
-            </h3>
-            <Link
-              href="/discoveries"
-              className="text-xs font-mono text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
-            >
-              [ VIEW ALL <ArrowRight className="w-3 h-3" /> ]
-            </Link>
-          </div>
-
-          {discoveredPlants.length > 0 ? (
-            <div className="space-y-2.5">
-              {discoveredPlants.slice(0, 3).map((plant, position) => {
-                const record = discovered[plant.id];
-                const index = plants.findIndex((p) => p.id === plant.id);
-                return (
-                  <div
-                    key={plant.id}
-                    className="animate-stagger-in"
-                    style={{ "--stagger-delay": `${position * 60}ms` } as React.CSSProperties}
-                  >
-                    <SpecimenCard
-                      plant={plant}
-                      index={index}
-                      isDiscovered={true}
-                      observationCount={record?.observationCount}
-                      customThumbnail={record?.thumbnailUrl}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-6 rounded-3xl bg-[#0C1015] border border-[#1E2732] text-center space-y-2">
-              <p className="text-xs font-semibold text-zinc-400">
-                No specimens catalogued yet
-              </p>
-              <p className="text-[11px] text-zinc-600 max-w-xs mx-auto">
-                Scan your first campus plant to unlock its scientific profile in your personal field collection.
-              </p>
-            </div>
-          )}
-        </section>
-        </RevealOnScroll>
-
-        {/* 4. Daily Field Objective */}
-        <RevealOnScroll delayMs={100}>
-        <section className="rounded-3xl bg-[#0C1015] border border-amber-500/30 p-5 shadow-xl text-left space-y-3">
-          <div className="flex items-center gap-2 text-amber-400">
-            <ClipboardList className="w-4 h-4" />
-            <span className="text-xs font-mono font-bold uppercase tracking-wider">
-              DAILY FIELD OBJECTIVE
-            </span>
-          </div>
-
-          <p className="text-xs text-zinc-300 leading-relaxed font-sans">
-            Inspect shaded campus ground and understory beds to locate and verify native flora specimens.
-          </p>
-
-          <div className="pt-2 border-t border-[#1E2732] flex items-center justify-between text-[10px] font-mono">
-            <span className="text-amber-400 font-bold flex items-center gap-1">
-              <Star className="w-3 h-3" /> REWARD: +50 FIELD EXP
-            </span>
-            <span className="text-zinc-500">{"// UNLOCK DOSSIER ENTRY"}</span>
-          </div>
-        </section>
-        </RevealOnScroll>
-      </div>
-      </div>
-
-      {/* 5. Conservation Awareness — required product section */}
-      <div className="pt-5 lg:pt-6">
-        <ConservationSection />
-      </div>
-      </div>
-    </AppShell>
+    </main>
   );
 }
