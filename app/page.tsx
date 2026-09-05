@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, User, Key, ArrowRight, ShieldCheck } from "lucide-react";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
+import { PixelForestBackground } from "@/components/PixelForestBackground";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -24,11 +25,14 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#06080A] p-4 relative overflow-hidden">
+      {/* Dynamic Pixel Forest Background with plants2.png */}
+      <PixelForestBackground bgImage="/plants2.png" />
+
       {/* Background Decorative Grid */}
-      <div className="absolute inset-0 scanner-grid opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 scanner-grid opacity-30 pointer-events-none z-10" />
       
-      <div className="w-full max-w-sm relative z-10 animate-reveal-in">
-        <div className="rounded-3xl bg-[#0C1015] border border-[#1E2732] shadow-2xl overflow-hidden relative">
+      <div className="w-full max-w-sm relative z-20 animate-reveal-in">
+        <div className="rounded-3xl bg-[#0C1015]/90 border border-[#1E2732] shadow-2xl overflow-hidden relative backdrop-blur-md">
           
           {/* Subtle top glowing accent */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />

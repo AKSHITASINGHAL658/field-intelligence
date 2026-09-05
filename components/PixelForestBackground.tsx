@@ -3,10 +3,14 @@
 import React from "react";
 import Image from "next/image";
 
-export function PixelForestBackground() {
+interface PixelForestBackgroundProps {
+  bgImage?: string;
+}
+
+export function PixelForestBackground({ bgImage = "/plants.png" }: PixelForestBackgroundProps) {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#05110b]">
-      {/* Custom Keyframe Animations for Roaming Characters */}
+      {/* Custom Keyframe Animations */}
       <style>{`
         @keyframes walk-patrol {
           0% { transform: translateX(0) scaleX(1); }
@@ -37,10 +41,10 @@ export function PixelForestBackground() {
         }
       `}</style>
 
-      {/* 1. Static Image Background (Loaded from public/plants.png or public/plants.jpg) */}
+      {/* Dynamic Image Background */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/plants.png" // Change extension to .jpg if you saved as plants.jpg
+          src={bgImage}
           alt="Pixel Forest Background"
           fill
           priority
@@ -49,7 +53,7 @@ export function PixelForestBackground() {
         />
       </div>
 
-      {/* 2. Optional Soft Atmospheric Overlay & Scanlines */}
+      {/* Atmospheric Overlay & Scanlines */}
       <div className="absolute inset-0 z-10 bg-emerald-950/20 mix-blend-multiply pointer-events-none" />
       <div 
         className="absolute inset-0 z-10 opacity-10 pointer-events-none"
@@ -59,16 +63,14 @@ export function PixelForestBackground() {
         }}
       />
 
-      {/* 3. Floating Sunlit Particles */}
+      {/* Floating Sunlit Particles */}
       <div className="absolute inset-0 z-15 opacity-70">
         <div className="w-1.5 h-1.5 bg-emerald-200 absolute top-1/3 left-1/4 animate-bounce [animation-duration:4s] shadow-[0_0_8px_#a7f3d0]" />
         <div className="w-2 h-2 bg-lime-300 absolute top-1/2 left-1/2 animate-bounce [animation-duration:5s] shadow-[0_0_10px_#bef264]" />
         <div className="w-1.5 h-1.5 bg-teal-200 absolute top-2/3 left-3/4 animate-bounce [animation-duration:3.5s]" />
       </div>
 
-      {/* 4. ANIMATED ROAMING PIXEL PLANT CHARACTERS */}
-
-      {/* Character 1: Walking Sprout Mascot in Forest Center */}
+      {/* Animated Roaming Pixel Plant Characters */}
       <div className="absolute bottom-[14%] left-[28%] z-20 animate-walk">
         <div className="relative p-1 bg-black/80 border border-emerald-400 rounded shadow-[0_0_10px_#52b788]">
           <svg width="24" height="24" viewBox="0 0 16 16">
@@ -82,7 +84,6 @@ export function PixelForestBackground() {
         </div>
       </div>
 
-      {/* Character 2: Hopping Mushroom Mascot Near Left Tree Trunk */}
       <div className="absolute bottom-[16%] left-[10%] z-20 animate-hop">
         <div className="relative p-1 bg-black/80 border border-teal-300 rounded shadow-[0_0_8px_#a7f3d0]">
           <svg width="22" height="22" viewBox="0 0 16 16">
@@ -94,7 +95,6 @@ export function PixelForestBackground() {
         </div>
       </div>
 
-      {/* Character 3: Swaying Floating Seedling Under Tree Canopy */}
       <div className="absolute top-[32%] right-[25%] z-20 animate-sway">
         <div className="relative p-1 bg-black/80 border border-lime-400 rounded shadow-[0_0_10px_#bef264]">
           <svg width="20" height="20" viewBox="0 0 16 16">
@@ -106,7 +106,6 @@ export function PixelForestBackground() {
         </div>
       </div>
 
-      {/* Character 4: Peeking Bush Mascot on Right Trunk Base */}
       <div className="absolute bottom-[18%] right-[14%] z-20 animate-bounce [animation-duration:3s]">
         <div className="relative p-1 bg-black/80 border border-emerald-300 rounded shadow-[0_0_8px_#34d399]">
           <svg width="22" height="22" viewBox="0 0 16 16">
@@ -117,7 +116,6 @@ export function PixelForestBackground() {
           </svg>
         </div>
       </div>
-
     </div>
   );
 }
