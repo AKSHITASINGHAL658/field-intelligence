@@ -1,172 +1,200 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
+import { Camera, Check, Lock, Star, HelpCircle, ArrowRight, ClipboardList, Layers } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell";
+import { PixelMascot } from "@/components/pixel/PixelMascot";
+import { SpecimenCard } from "@/components/collection/SpecimenCard";
 import { useExplorerStore } from "@/lib/useExplorerStore";
-import {
-  Camera,
-  Trophy,
-  Sparkles,
-  Compass,
-  Award,
-  Zap,
-  ArrowRight,
-  ShieldCheck,
-} from "lucide-react";
+import { plants } from "@/data/plantDatabase";
 
 export default function HomePage() {
-  const { xp, level, progressPercent, scansCount, badges } = useExplorerStore();
+  const { isHydrated, discovered, discoveredCount, totalCatalogCount, exp, isDiscovered } =
+    useExplorerStore();
+
+  const unchartedCount = totalCatalogCount - discoveredCount;
+  const progressPercent = totalCatalogCount > 0 ? (discoveredCount / totalCatalogCount) * 100 : 0;
+
+  // Recent discoveries list
+  const discoveredPlants = plants.filter((p) => isDiscovered(p.id));
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
-      {/* Top Glassmorphic Navigation Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-zinc-950/80 border-b border-zinc-800/80 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-              <Compass className="w-5 h-5 text-black" />
+    <AppShell>
+      <div className="max-w-md mx-auto px-4 py-5 space-y-5">
+        {/* 1. Sprout-OS Field Companion Card */}
+        <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 shadow-xl space-y-4">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-sm bg-emerald-400" />
+              SPROUT-OS // V2.4 FIELD COMPANION
+            </span>
+            <span className="text-[10px] font-bold bg-[#141B22] text-zinc-400 px-2 py-0.5 rounded-full border border-[#1E2732]">
+              BIOZONE-07
+            </span>
+          </div>
+
+          <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-[#080D11] border border-[#171F28]">
+            <div className="p-1 rounded-xl bg-[#0C1015] border border-emerald-500/30 flex-shrink-0">
+              <PixelMascot size={48} expression={discoveredCount > 0 ? "happy" : "curious"} />
             </div>
-            <div>
-              <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-white via-zinc-200 to-emerald-400 bg-clip-text text-transparent">
-                FLORA SPATIAL
-              </h1>
-              <p className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">
-                Field Intelligence OS
+            <div className="space-y-1 text-xs">
+              <p className="font-bold text-white flex items-center gap-1">
+                WELCOME BACK, RESEARCHER! 🐸
+              </p>
+              <p className="text-zinc-400 leading-relaxed text-[11px]">
+                {isHydrated && discoveredCount === 0
+                  ? "Field station initialized. 7 uncharted botanical taxa await your first scan."
+                  : `Ready for field work? ${unchartedCount} uncharted botanical taxa await identification in the campus flora zone.`}
               </p>
             </div>
           </div>
 
-          {/* Gamified Rank & Level Indicator */}
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col items-end">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span>Level {level} Explorer</span>
-                <span className="text-zinc-500">•</span>
-                <span className="text-emerald-400 font-mono">{xp} XP</span>
-              </div>
-              <div className="w-36 h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1 border border-zinc-700/50">
+          <Link
+            href="/scanner"
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)]"
+          >
+            <Camera className="w-4 h-4" /> [ 📷 SCAN SPECIMEN ]
+          </Link>
+        </section>
+
+        {/* 2. Expedition Progress & Telemetry */}
+        <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 shadow-xl space-y-4 text-left">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-zinc-500 uppercase tracking-wider font-bold">
+              BIO-SURVEY TELEMETRY
+            </span>
+            <span className="text-emerald-400 font-bold">
+              {isHydrated ? `${discoveredCount} / ${totalCatalogCount}` : "0 / 7"}{" "}
+              <span className="text-zinc-500 font-normal">
+                {isHydrated ? `${progressPercent.toFixed(1)}% INDEXED` : "0% INDEXED"}
+              </span>
+            </span>
+          </div>
+
+          <h3 className="text-base font-bold text-white tracking-tight">
+            CAMPUS EXPEDITION PROGRESS
+          </h3>
+
+          {/* 7 Specimen Checkmark / Lock Blocks */}
+          <div className="grid grid-cols-7 gap-1.5">
+            {plants.map((plant, index) => {
+              const unlocked = isDiscovered(plant.id);
+              return (
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                />
+                  key={plant.id}
+                  className={`h-9 rounded-xl flex items-center justify-center text-xs font-mono transition-all ${
+                    unlocked
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                      : "bg-[#090D11] text-zinc-600 border border-[#171F28]"
+                  }`}
+                  title={unlocked ? plant.commonName : `Specimen #${index + 1} (Uncharted)`}
+                >
+                  {unlocked ? <Check className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5" />}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 3 Metric Stat Boxes */}
+          <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+            <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732]">
+              <Layers className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+              <div className="text-base font-bold text-white font-mono">
+                {isHydrated ? discoveredCount : 0}
+              </div>
+              <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                DISCOVERED
               </div>
             </div>
 
+            <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732]">
+              <HelpCircle className="w-4 h-4 text-zinc-500 mx-auto mb-1" />
+              <div className="text-base font-bold text-white font-mono">
+                {isHydrated ? unchartedCount : totalCatalogCount}
+              </div>
+              <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                UNCHARTED
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732]">
+              <Star className="w-4 h-4 text-amber-400 mx-auto mb-1" />
+              <div className="text-base font-bold text-amber-400 font-mono">
+                {isHydrated ? exp : 0}
+              </div>
+              <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                FIELD EXP
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Recent Specimen Discoveries */}
+        <section className="space-y-3 text-left">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-sm bg-emerald-400" />
+              RECENT SPECIMEN DISCOVERIES
+            </h3>
             <Link
-              href="/scanner"
-              className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-bold text-xs px-4 py-2.5 rounded-xl shadow-[0_0_25px_rgba(16,185,129,0.4)] transition-all transform hover:scale-[1.02]"
+              href="/discoveries"
+              className="text-xs font-mono text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
             >
-              <Camera className="w-4 h-4" /> Launch AR Scanner
+              [ VIEW ALL <ArrowRight className="w-3 h-3" /> ]
             </Link>
           </div>
-        </div>
-      </header>
 
-      {/* Main Content Hub */}
-      <main className="max-w-6xl w-full mx-auto px-6 py-8 flex-1 space-y-8">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 border border-zinc-800 p-8 sm:p-10 shadow-2xl">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Real-Time Botanical AR Intelligence</span>
+          {discoveredPlants.length > 0 ? (
+            <div className="space-y-2.5">
+              {discoveredPlants.slice(0, 3).map((plant) => {
+                const record = discovered[plant.id];
+                const index = plants.findIndex((p) => p.id === plant.id);
+                return (
+                  <SpecimenCard
+                    key={plant.id}
+                    plant={plant}
+                    index={index}
+                    isDiscovered={true}
+                    observationCount={record?.observationCount}
+                    customThumbnail={record?.thumbnailUrl}
+                  />
+                );
+              })}
             </div>
-
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-              Explore Nature like an <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Augmented Reality</span> Field Agent.
-            </h2>
-
-            <p className="text-sm text-zinc-400 leading-relaxed">
-              Identify native species, measure ecological impact, and collect high-value explorer badges using live spatial scanning and contextual botanical RAG models.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                href="/scanner"
-                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-lg"
-              >
-                Start Field Scan <ArrowRight className="w-4 h-4" />
-              </Link>
+          ) : (
+            <div className="p-6 rounded-3xl bg-[#0C1015] border border-[#1E2732] text-center space-y-2">
+              <p className="text-xs font-semibold text-zinc-400">
+                No specimens catalogued yet
+              </p>
+              <p className="text-[11px] text-zinc-600 max-w-xs mx-auto">
+                Scan your first campus plant to unlock its scientific profile in your personal field collection.
+              </p>
             </div>
-          </div>
+          )}
         </section>
 
-        {/* Stats & Progression Bar */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400">
-              <Zap className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-zinc-500 uppercase font-mono">Total Scans</p>
-              <h3 className="text-xl font-bold text-white">{scansCount} Specimens</h3>
-            </div>
+        {/* 4. Daily Field Objective */}
+        <section className="rounded-3xl bg-[#0C1015] border border-amber-500/30 p-5 shadow-xl text-left space-y-3">
+          <div className="flex items-center gap-2 text-amber-400">
+            <ClipboardList className="w-4 h-4" />
+            <span className="text-xs font-mono font-bold uppercase tracking-wider">
+              DAILY FIELD OBJECTIVE
+            </span>
           </div>
 
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400">
-              <Trophy className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-zinc-500 uppercase font-mono">Explorer Level</p>
-              <h3 className="text-xl font-bold text-white">Level {level}</h3>
-            </div>
-          </div>
+          <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+            Inspect shaded campus ground and understory beds to locate and verify native flora specimens.
+          </p>
 
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-5 flex items-center gap-4">
-            <div className="p-3 bg-teal-500/10 border border-teal-500/30 rounded-xl text-teal-400">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-zinc-500 uppercase font-mono">Badges Earned</p>
-              <h3 className="text-xl font-bold text-white">
-                {badges.filter((b) => b.unlocked).length} / {badges.length}
-              </h3>
-            </div>
+          <div className="pt-2 border-t border-[#1E2732] flex items-center justify-between text-[10px] font-mono">
+            <span className="text-amber-400 font-bold flex items-center gap-1">
+              <Star className="w-3 h-3" /> REWARD: +50 FIELD EXP
+            </span>
+            <span className="text-zinc-500">{"// UNLOCK DOSSIER ENTRY"}</span>
           </div>
         </section>
-
-        {/* Gamified Achievements Showcase */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-emerald-400" />
-              <h3 className="text-lg font-bold text-white">Field Achievements</h3>
-            </div>
-            <span className="text-xs text-zinc-500 font-mono">Complete tasks to gain XP</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {badges.map((badge) => (
-              <div
-                key={badge.id}
-                className={`p-4 rounded-2xl border transition-all ${
-                  badge.unlocked
-                    ? "bg-zinc-900/90 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                    : "bg-zinc-950/50 border-zinc-800/60 opacity-50"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl">{badge.icon}</span>
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                      badge.unlocked
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                        : "bg-zinc-800 text-zinc-500"
-                    }`}
-                  >
-                    {badge.unlocked ? "Unlocked" : "Locked"}
-                  </span>
-                </div>
-                <h4 className="text-sm font-bold text-white">{badge.title}</h4>
-                <p className="text-xs text-zinc-400 mt-1">{badge.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 }
