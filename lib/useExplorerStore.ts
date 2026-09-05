@@ -160,6 +160,11 @@ export function useExplorerStore() {
   const level = Math.floor(exp / 200) + 1;
   const currentLevelExp = exp % 200;
   const progressPercent = Math.min((currentLevelExp / 200) * 100, 100);
+  const observations = Object.values(discovered).map((record) => ({
+    ...record,
+    plantId: record.speciesId,
+    timestamp: record.lastObservedAt,
+  }));
 
   const badges: Badge[] = [
     {
@@ -198,10 +203,12 @@ export function useExplorerStore() {
     discoveredCount,
     totalCatalogCount,
     exp,
+    totalXp: exp,
     level,
     progressPercent,
     totalScans,
     badges,
+    observations,
     isDiscovered,
     getSpecimenRecord,
     recordObservation,

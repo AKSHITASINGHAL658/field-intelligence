@@ -3,12 +3,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Image as ImageIcon, Zap, ZapOff, LoaderCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, Zap, ZapOff, LoaderCircle, AlertCircle, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
 import { PixelReticle } from "@/components/pixel/PixelReticle";
 import { PixelLoader } from "@/components/pixel/PixelLoader";
-import { SpecimenReveal } from "@/components/scanner/SpecimenReveal";
+import { PixelForestBackground } from "@/components/PixelForestBackground";
+import { AROverlay } from "@/components/AROverlay";
 import { classifyImage } from "@/lib/plantClassifier";
 import { useMagnetic } from "@/components/motion/useMagnetic";
 import { useExplorerStore } from "@/lib/useExplorerStore";
@@ -21,10 +22,10 @@ export default function ScannerPage() {
   const [phase, setPhase] = useState<ScanPhase>("idle");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [identifiedPlant, setIdentifiedPlant] = useState<Plant | null>(null);
-  const [confidence, setConfidence] = useState<number>(0);
-  const [isNewDiscovery, setIsNewDiscovery] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [torchActive, setTorchActive] = useState(false);
+  const [isNewDiscovery, setIsNewDiscovery] = useState(false);
+
   const { ref: shutterRef, onMouseMove: onShutterMove, onMouseLeave: onShutterLeave } =
     useMagnetic<HTMLButtonElement>(8);
 
@@ -35,7 +36,6 @@ export default function ScannerPage() {
 
   const { recordObservation } = useExplorerStore();
 
-  // Stop camera tracks cleanly
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -46,7 +46,6 @@ export default function ScannerPage() {
     }
   }, []);
 
-  // Start real camera stream
   const startCamera = useCallback(async () => {
     try {
       setErrorMessage(null);
@@ -72,7 +71,6 @@ export default function ScannerPage() {
     }
   }, [stopCamera]);
 
-  // Auto-start camera when landing on /scanner
   useEffect(() => {
     let cancelled = false;
 
@@ -96,7 +94,7 @@ export default function ScannerPage() {
       .catch((err) => {
         if (!cancelled) {
           console.warn("Direct camera access unavailable:", err);
-          setErrorMessage("Camera access unavailable. You can upload an image instead.");
+          setErrorMessage("Camera unavailable. Upload a photo to scan!");
           setPhase("error");
         }
       });
@@ -107,7 +105,6 @@ export default function ScannerPage() {
     };
   }, [stopCamera]);
 
-  // Toggle hardware torch / flashlight if supported
   const toggleTorch = async () => {
     if (!streamRef.current) return;
     const track = streamRef.current.getVideoTracks()[0];
@@ -117,7 +114,7 @@ export default function ScannerPage() {
       const capabilities = (track.getCapabilities?.() as { torch?: boolean }) ?? {};
       if (capabilities.torch) {
         const nextState = !torchActive;
-        // @ts-expect-error torch is valid in mobile browser ImageCapture API
+        // @ts-expect-error torch is valid in mobile browsers
         await track.applyConstraints({ advanced: [{ torch: nextState }] });
         setTorchActive(nextState);
       } else {
@@ -128,24 +125,21 @@ export default function ScannerPage() {
     }
   };
 
-  // Run real in-browser ONNX inference and API enrichment
   const executeClassification = async (imageSource: CanvasImageSource, photoDataUrl?: string) => {
     setPhase("analyzing");
     setErrorMessage(null);
 
     try {
-      // 1. Run real client-side ONNX vision model
       const result = await classifyImage(imageSource);
 
       if (!result.success || !result.speciesId) {
         setErrorMessage(
-          result.reason ?? "Low confidence match. Please capture the foliage more closely."
+          result.reason ?? "Target unclear! Move camera closer to foliage."
         );
         setPhase("error");
         return;
       }
 
-      // 2. Call /api/classify for real database enrichment
       const response = await fetch("/api/classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,28 +149,24 @@ export default function ScannerPage() {
       const data = (await response.json()) as ClassifyResponse;
 
       if (!response.ok || !data.success || !data.plant) {
-        setErrorMessage(data.reason ?? "No matching botanical record found in catalog.");
+        setErrorMessage(data.reason ?? "No matching botanical record found in database.");
         setPhase("error");
         return;
       }
 
-      // 3. Stop camera and save to real local collection
-      stopCamera();
       const conf = data.confidence ?? result.confidence ?? 0.85;
       const { isNew } = recordObservation(data.plant.id, conf, photoDataUrl);
 
       setIdentifiedPlant(data.plant);
-      setConfidence(conf);
       setIsNewDiscovery(isNew);
       setPhase("revealed");
     } catch (err) {
       console.error("Classification pipeline failed:", err);
-      setErrorMessage("Classification error. Check image resolution or model state.");
+      setErrorMessage("Classification error. Check image or neural net state.");
       setPhase("error");
     }
   };
 
-  // Capture frame from active live video
   const handleCapture = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -201,12 +191,10 @@ export default function ScannerPage() {
     await executeClassification(canvas, dataUrl);
   };
 
-  // Upload image from file picker
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    stopCamera();
     const url = URL.createObjectURL(file);
     setSelectedImage(url);
 
@@ -215,245 +203,243 @@ export default function ScannerPage() {
     img.onload = () => {
       executeClassification(img, url);
     };
-    img.onerror = () => {
-      setErrorMessage("Could not parse image file.");
-      setPhase("error");
-    };
   };
 
   const handleReset = () => {
     setIdentifiedPlant(null);
     setSelectedImage(null);
     setErrorMessage(null);
-    setPhase("idle");
-    startCamera();
+    if (streamRef.current && streamRef.current.active) {
+      setPhase("camera-live");
+    } else {
+      setPhase("idle");
+      startCamera();
+    }
   };
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-4 space-y-4 md:max-w-xl lg:max-w-5xl lg:px-8 lg:py-8">
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between text-xs font-mono">
+      {/* Dynamic Animated Pixel Forest Background */}
+      <PixelForestBackground />
+
+      <div className="relative z-10 max-w-md mx-auto px-4 py-4 space-y-4 font-mono md:max-w-xl lg:max-w-5xl lg:px-8 lg:py-8">
+        
+        {/* Retro Header Bar */}
+        <div className="flex items-center justify-between text-xs bg-black/80 border-2 border-emerald-500 p-2.5 shadow-[4px_4px_0px_#000]">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-200 transition-colors font-black uppercase tracking-wider"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>FLORA LENS</span>
+            <ArrowLeft className="w-4 h-4 stroke-[3]" />
+            <span>◄ ARCADE SCANNER</span>
           </Link>
-          <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            READY
-          </span>
+          
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500 px-2 py-0.5">
+              <span className="h-2 w-2 rounded-none bg-emerald-400 animate-ping" />
+              {phase === "revealed" ? "HUD: ACTIVE" : "STATION READY"}
+            </span>
+          </div>
         </div>
 
-        {/* REVEAL STATE */}
-        {phase === "revealed" && identifiedPlant && (
-          <SpecimenReveal
-            plant={identifiedPlant}
-            confidence={confidence}
-            isNewDiscovery={isNewDiscovery}
-            userPhotoUrl={selectedImage ?? undefined}
-            onScanAnother={handleReset}
-          />
-        )}
-
-        {/* VIEWPORT & SCANNER UI */}
-        {phase !== "revealed" && (
-          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-5 lg:gap-6">
-            {/* Viewfinder Frame Container */}
-            <div className="relative aspect-[3/4] lg:aspect-[4/3] w-full rounded-3xl overflow-hidden bg-black border border-[#1E2732] shadow-2xl flex items-center justify-center lg:col-start-1 lg:col-span-3 lg:row-start-1">
-              {/* Live Video Stream */}
-              <video
-                ref={videoRef}
-                playsInline
-                muted
-                className={`h-full w-full object-cover ${
-                  phase === "camera-live" ? "block" : "hidden"
-                }`}
-              />
-
-              {/* Uploaded / Captured Image Preview */}
-              {selectedImage && phase !== "camera-live" && (
-                <Image
-                  src={selectedImage}
-                  alt="Captured specimen"
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
-              )}
-
-              {/* Faint targeting grid behind the reticle */}
-              {(phase === "camera-live" || phase === "analyzing") && (
-                <div className="absolute inset-0 scanner-grid pointer-events-none" aria-hidden="true" />
-              )}
-
-              {/* "SPECIMEN IN VIEW" Top Indicator */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#06080A]/85 backdrop-blur-md border border-emerald-500/40 rounded-full px-3 py-1 flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 tracking-wider uppercase z-20">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                SPECIMEN IN VIEW
-              </div>
-
-              {/* Optical Targeting Reticle */}
-              <PixelReticle scanning={phase === "analyzing"} />
-
-              {/* Camera Initializing Overlay */}
-              {phase === "idle" && (
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
-                  <PixelLoader />
-                  <p className="text-xs font-mono text-zinc-400">
-                    Requesting camera access...
-                  </p>
-                </div>
-              )}
-
-              {/* Error Message Overlay */}
-              {phase === "error" && (
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-6 flex flex-col items-center justify-center text-center text-zinc-300 space-y-3 z-30 animate-stage-in">
-                  {errorMessage?.toLowerCase().includes("confidence") ? (
-                    <PixelMascot size={40} expression="confused" />
-                  ) : (
-                    <AlertCircle className="w-8 h-8 text-amber-400" />
-                  )}
-                  <p className="text-xs leading-relaxed max-w-xs">{errorMessage}</p>
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={startCamera}
-                      className="px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold font-mono transition-transform active:scale-95"
-                    >
-                      RETRY CAMERA
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 rounded-xl bg-[#141B22] border border-[#1E2732] text-white text-xs font-mono transition-transform active:scale-95"
-                    >
-                      UPLOAD PHOTO
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Hidden capture canvas & file input */}
-            <canvas ref={canvasRef} className="hidden" />
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileSelect}
+        {/* ARCADE CABINET SCREEN CONTAINER */}
+        <div className="relative space-y-4 lg:space-y-0 lg:grid lg:grid-cols-5 lg:gap-6">
+          
+          {/* Main Viewfinder Frame */}
+          <div className="relative aspect-[3/4] lg:aspect-[4/3] w-full bg-black border-4 border-emerald-500 shadow-[8px_8px_0px_#000000] overflow-hidden flex items-center justify-center lg:col-start-1 lg:col-span-3 lg:row-start-1">
+            
+            {/* Live Camera Stream */}
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              className={`h-full w-full object-cover ${
+                phase === "camera-live" || phase === "analyzing" || phase === "revealed"
+                  ? "block"
+                  : "hidden"
+              }`}
             />
 
-            {/* Botanical Feature Analysis Card */}
-            <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] flex items-center justify-between lg:col-start-4 lg:col-span-2 lg:row-start-1">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-[#141B22] border border-emerald-500/30 flex items-center justify-center">
-                  <PixelMascot
-                    size={28}
-                    expression={
-                      phase === "analyzing"
-                        ? "analyzing"
-                        : phase === "camera-live"
-                          ? "scanning"
-                          : "happy"
-                    }
-                  />
-                </div>
-                <div className="space-y-0.5 text-left">
-                  <h4 className="text-xs font-bold text-white">
-                    {phase === "analyzing"
-                      ? "Analyzing botanical features..."
-                      : "Ready to classify specimen"}
-                  </h4>
-                  <p className="text-[10px] font-mono text-emerald-400">
-                    {phase === "analyzing"
-                      ? "ONNX NEURAL INFERENCE RUNNING"
-                      : "CLIENT ML CLASSIFIER READY"}
-                  </p>
+            {/* Static Snapshot Preview (If video unavailable) */}
+            {selectedImage && phase !== "camera-live" && phase !== "revealed" && (
+              <Image
+                src={selectedImage}
+                alt="Captured Specimen"
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            )}
+
+            {/* Target Reticle */}
+            {phase !== "revealed" && <PixelReticle scanning={phase === "analyzing"} />}
+
+            {/* Live AR Overlay Flashcard */}
+            {phase === "revealed" && identifiedPlant && (
+              <AROverlay
+                plant={identifiedPlant}
+                onClose={handleReset}
+                xpEarned={isNewDiscovery ? 100 : 25}
+              />
+            )}
+
+            {/* Initializing Loader */}
+            {phase === "idle" && (
+              <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-3 z-20">
+                <PixelLoader />
+                <p className="text-xs text-emerald-400 font-bold uppercase tracking-widest animate-pulse">
+                  CONNECTING SENSORS...
+                </p>
+              </div>
+            )}
+
+            {/* Error Stage Overlay */}
+            {phase === "error" && (
+              <div className="absolute inset-0 bg-black/90 p-6 flex flex-col items-center justify-center text-center space-y-3 z-30">
+                <PixelMascot size={48} expression="confused" />
+                <p className="text-xs text-red-400 font-bold leading-relaxed max-w-xs">{errorMessage}</p>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={startCamera}
+                    className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 border-2 border-black text-black text-xs font-black uppercase shadow-[2px_2px_0px_#000]"
+                  >
+                    RETRY CAMERA
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 border-2 border-black text-white text-xs font-black uppercase shadow-[2px_2px_0px_#000]"
+                  >
+                    SELECT PHOTO
+                  </button>
                 </div>
               </div>
-
-              <span
-                className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border transition-colors ${
-                  phase === "analyzing"
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse-gentle"
-                    : "bg-zinc-800 text-zinc-400 border-zinc-700"
-                }`}
-              >
-                {phase === "analyzing" ? "INFERRING" : "STANDBY"}
-              </span>
-            </div>
-
-            {/* Scanning Tips — desktop-only supporting panel */}
-            <div className="hidden lg:block lg:col-start-4 lg:col-span-2 lg:row-start-2 p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] space-y-3">
-              <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
-                Scanning Tips
-              </h4>
-              <ul className="space-y-2 text-xs text-zinc-400 font-sans">
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 font-bold font-mono">▸</span>
-                  <span>Center the plant in the reticle and fill most of the frame.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 font-bold font-mono">▸</span>
-                  <span>Use even, natural lighting — avoid harsh backlight or deep shadow.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 font-bold font-mono">▸</span>
-                  <span>Hold steady until analysis completes to avoid a blurry capture.</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Bottom Action Controls */}
-            <div className="flex items-center justify-between gap-3 pt-1 lg:col-start-1 lg:col-span-3 lg:row-start-2">
-              {/* Gallery upload */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl bg-[#0C1015] hover:bg-[#141B22] border border-[#1E2732] text-zinc-300 transition-all active:scale-95 text-[10px] font-mono font-bold"
-              >
-                <ImageIcon className="w-5 h-5 text-emerald-400" />
-                GALLERY
-              </button>
-
-              {/* Shutter Identify Button */}
-              <button
-                ref={shutterRef}
-                onMouseMove={onShutterMove}
-                onMouseLeave={onShutterLeave}
-                onClick={handleCapture}
-                disabled={phase === "analyzing"}
-                className="flex-[2] flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs tracking-wider uppercase transition-all active:scale-[0.97] shadow-[0_0_25px_rgba(16,185,129,0.4)] disabled:opacity-60 disabled:active:scale-100"
-              >
-                {phase === "analyzing" ? (
-                  <>
-                    <LoaderCircle className="w-4 h-4 animate-spin" />
-                    ANALYZING...
-                  </>
-                ) : (
-                  <>
-                    <span className="text-base font-mono leading-none">⛶</span>
-                    Identify Plant
-                  </>
-                )}
-              </button>
-
-              {/* Torch toggle */}
-              <button
-                onClick={toggleTorch}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl bg-[#0C1015] hover:bg-[#141B22] border border-[#1E2732] text-zinc-300 transition-all active:scale-95 text-[10px] font-mono font-bold"
-              >
-                {torchActive ? (
-                  <Zap className="w-5 h-5 text-amber-400" />
-                ) : (
-                  <ZapOff className="w-5 h-5 text-zinc-500" />
-                )}
-                TORCH
-              </button>
-            </div>
+            )}
           </div>
-        )}
+
+          <canvas ref={canvasRef} className="hidden" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+
+          {/* Interactive Mascot Arcade Dialogue Card */}
+          <div className="relative bg-black/85 border-4 border-emerald-500 p-3 shadow-[6px_6px_0px_#000000] flex items-center justify-between lg:col-start-4 lg:col-span-2 lg:row-start-1">
+            <div className="flex items-center gap-3">
+              <div className="p-1 bg-emerald-950 border-2 border-emerald-500">
+                <PixelMascot
+                  size={36}
+                  expression={
+                    phase === "analyzing"
+                      ? "analyzing"
+                      : phase === "revealed"
+                        ? "happy"
+                        : "scanning"
+                  }
+                />
+              </div>
+              <div className="space-y-0.5 text-left">
+                <h4 className="text-xs font-black text-emerald-300 uppercase tracking-wider">
+                  {phase === "analyzing"
+                    ? "NEURAL SCAN RUNNING..."
+                    : phase === "revealed"
+                      ? "SPECIES IDENTIFIED!"
+                      : "FLORA BOT ASSISTANT"}
+                </h4>
+                <p className="text-[10px] text-zinc-400">
+                  {phase === "analyzing"
+                    ? "MATCHING LEAF PATTERNS"
+                    : phase === "revealed"
+                      ? "AR HUD SYNCHRONIZED"
+                      : "AIM AT LEAF AND PRESS SCAN"}
+                </p>
+              </div>
+            </div>
+
+            <Sparkles className="w-5 h-5 text-yellow-400 animate-pulse" />
+          </div>
+
+          {/* Side Mascot & Arcade Instructions Panel (Desktop) */}
+          <div className="hidden lg:flex lg:flex-col lg:col-start-4 lg:col-span-2 lg:row-start-2 bg-black/85 border-4 border-emerald-500 p-4 shadow-[6px_6px_0px_#000000] space-y-3 relative">
+            <div className="flex items-center justify-between border-b-2 border-emerald-900 pb-2">
+              <span className="text-xs font-black text-yellow-400 uppercase tracking-widest">
+                MISSION GUIDE
+              </span>
+              <PixelMascot size={28} expression="happy" />
+            </div>
+            
+            <ul className="space-y-2 text-xs text-emerald-200">
+              <li className="flex items-start gap-2">
+                <span className="text-yellow-400 font-bold">1.</span>
+                <span>Center the plant foliage inside the scanner crosshair.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-yellow-400 font-bold">2.</span>
+                <span>Press <strong>SCAN SPECIMEN</strong> to execute ONNX neural classification.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-yellow-400 font-bold">3.</span>
+                <span>View the 8-bit AR flashcard overlay in real time!</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Arcade Cabinet Bottom Buttons Controls */}
+          <div className="flex items-center justify-between gap-2 pt-1 lg:col-start-1 lg:col-span-3 lg:row-start-2">
+            
+            {/* Gallery Upload */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 bg-zinc-900 hover:bg-zinc-800 border-4 border-black text-emerald-300 shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 text-[10px] font-black uppercase tracking-wider"
+            >
+              <ImageIcon className="w-5 h-5 text-emerald-400" />
+              GALLERY
+            </button>
+
+            {/* Shutter / Scan Button */}
+            <button
+              ref={shutterRef}
+              onMouseMove={onShutterMove}
+              onMouseLeave={onShutterLeave}
+              onClick={phase === "revealed" ? handleReset : handleCapture}
+              disabled={phase === "analyzing"}
+              className="flex-[2] flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-500 hover:bg-emerald-400 border-4 border-black text-black font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-60"
+            >
+              {phase === "analyzing" ? (
+                <>
+                  <LoaderCircle className="w-5 h-5 animate-spin" />
+                  ANALYZING...
+                </>
+              ) : phase === "revealed" ? (
+                <>
+                  <span className="text-base leading-none">↻</span>
+                  SCAN ANOTHER
+                </>
+              ) : (
+                <>
+                  <span className="text-base leading-none">⚔</span>
+                  SCAN SPECIMEN
+                </>
+              )}
+            </button>
+
+            {/* Torch Toggle */}
+            <button
+              onClick={toggleTorch}
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 bg-zinc-900 hover:bg-zinc-800 border-4 border-black text-emerald-300 shadow-[4px_4px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 text-[10px] font-black uppercase tracking-wider"
+            >
+              {torchActive ? (
+                <Zap className="w-5 h-5 text-yellow-400" />
+              ) : (
+                <ZapOff className="w-5 h-5 text-zinc-500" />
+              )}
+              LIGHT
+            </button>
+          </div>
+
+        </div>
       </div>
     </AppShell>
   );
