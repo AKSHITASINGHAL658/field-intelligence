@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
 import { SpecimenCard } from "@/components/collection/SpecimenCard";
 import { useExplorerStore } from "@/lib/useExplorerStore";
+import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import { plants } from "@/data/plantDatabase";
 
 type FilterTab = "all" | "discovered" | "undiscovered";
@@ -28,6 +29,7 @@ export default function DiscoveriesPage() {
     <AppShell>
       <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8">
         {/* Header Hero Card */}
+        <RevealOnScroll>
         <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 shadow-xl space-y-4">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
@@ -59,6 +61,7 @@ export default function DiscoveriesPage() {
             />
           </div>
         </section>
+        </RevealOnScroll>
 
         {/* Filter Tab Pills */}
         <div className="flex items-center gap-2">

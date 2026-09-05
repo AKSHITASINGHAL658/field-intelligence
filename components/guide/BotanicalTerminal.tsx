@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Send, LoaderCircle, Sparkles, MessageSquare } from "lucide-react";
 import { plants } from "@/data/plantDatabase";
 import { PixelMascot } from "../pixel/PixelMascot";
+import { useMagnetic } from "../motion/useMagnetic";
 
 interface BotanicalTerminalProps {
   initialPlantId?: string;
@@ -18,6 +19,8 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
   >([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const { ref: sendRef, onMouseMove: onSendMove, onMouseLeave: onSendLeave } =
+    useMagnetic<HTMLButtonElement>(6);
 
   // initialPlantId comes from the ?plantId= query param. Navigating between
   // species while already on /guide (e.g. one "Ask AI Guide" link to
@@ -199,6 +202,9 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
             className="flex-1 bg-[#090D11] border border-[#1E2732] rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500 font-sans"
           />
           <button
+            ref={sendRef}
+            onMouseMove={onSendMove}
+            onMouseLeave={onSendLeave}
             type="submit"
             disabled={loading || !input.trim()}
             aria-label="Send Query"

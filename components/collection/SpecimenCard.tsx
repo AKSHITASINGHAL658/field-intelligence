@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight, Lock } from "lucide-react";
 import { Plant } from "@/types/plant";
 import { PixelPlantIcon, PixelIconType } from "../pixel/PixelPlantIcon";
+import { PixelFrame } from "../pixel/PixelFrame";
+import { useTilt } from "../motion/useTilt";
 
 interface SpecimenCardProps {
   plant: Plant;
@@ -34,15 +36,47 @@ export function SpecimenCard({
 }: SpecimenCardProps) {
   const specimenNumber = `#${String(index + 1).padStart(2, "0")}`;
   const pixelType = getPlantPixelType(plant);
+  const [hovering, setHovering] = useState(false);
+  // Attached to a plain host <div>, not <Link> — Link's ref forwarding
+  // wasn't populating ref.current before effects ran in this Next version
+  // (verified directly). React prop-based mouse handlers, not an
+  // addEventListener effect, so it isn't sensitive to that either.
+  const { ref: tiltRef, onMouseMove: onTiltMove, onMouseLeave: onTiltLeave } = useTilt<HTMLDivElement>(3, 4);
+
+  // The accent only ever reflects a real database field (endemic) — never
+  // an invented "rarity" tier.
+  const accentTone = plant.endemic ? "amber" : "emerald";
 
   // Below md: compact horizontal row (list). At md+: a taller vertical card
   // with a bigger image area, suited to a grid of cards instead of a list.
   if (isDiscovered) {
     return (
+      <div
+        ref={tiltRef}
+        onMouseMove={onTiltMove}
+        onMouseLeave={onTiltLeave}
+        className={`group relative flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#0C1015] border transition-colors duration-200 active:scale-[0.98] md:flex-col md:items-stretch md:gap-0 md:p-0 md:overflow-hidden ${
+          accentTone === "amber"
+            ? "border-amber-500/30 hover:border-amber-400/60"
+            : "border-[#1E2732] hover:border-emerald-500/50"
+        } hover:bg-[#111720] md:hover:shadow-xl md:hover:shadow-black/40`}
+      >
       <Link
         href={`/species/${plant.id}`}
-        className="group flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#0C1015] border border-[#1E2732] hover:border-emerald-500/50 hover:bg-[#111720] transition-all duration-200 active:scale-[0.98] md:flex-col md:items-stretch md:gap-0 md:p-0 md:overflow-hidden md:hover:-translate-y-1 md:hover:shadow-xl md:hover:shadow-black/40"
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        className="contents"
       >
+        {/* Collectible-card corner framing, only lit up on hover */}
+        <PixelFrame
+          active={hovering}
+          tone={accentTone}
+          size={10}
+          className={`hidden md:block m-1.5 transition-opacity duration-200 ${
+            hovering ? "opacity-100" : "opacity-0"
+          }`}
+        />
+
         {/* Thumbnail / Botanical Emblem */}
         <div className="relative h-14 w-14 rounded-xl bg-[#141B22] border border-[#1E2732] overflow-hidden flex items-center justify-center flex-shrink-0 md:h-36 md:w-full md:rounded-none md:border-0 md:border-b md:border-[#1E2732]">
           {customThumbnail ? (
@@ -73,7 +107,13 @@ export function SpecimenCard({
             <span className="text-[11px] font-mono font-medium text-zinc-500">
               Specimen {specimenNumber}
             </span>
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span
+              className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                accentTone === "amber"
+                  ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                  : "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+              }`}
+            >
               Discovered
             </span>
           </div>
@@ -90,13 +130,15 @@ export function SpecimenCard({
 
         <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 transition-colors mr-1 md:hidden" />
       </Link>
+      </div>
     );
   }
 
-  // Undiscovered / Locked State
+  // Undiscovered / Locked State — pixel silhouette, scanline shimmer, mystery retained
   return (
-    <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#090D11] border border-[#171F28] opacity-65 md:flex-col md:items-stretch md:gap-0 md:p-0 md:overflow-hidden">
-      <div className="h-14 w-14 rounded-xl bg-[#070A0D] border border-[#171F28] flex items-center justify-center flex-shrink-0 text-zinc-600 md:h-36 md:w-full md:rounded-none md:border-0 md:border-b md:border-[#171F28]">
+    <div className="group relative flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#090D11] border border-[#171F28] opacity-65 hover:opacity-85 transition-opacity md:flex-col md:items-stretch md:gap-0 md:p-0 md:overflow-hidden pixel-shimmer">
+      <PixelFrame active={false} size={10} className="hidden md:block m-1.5" />
+      <div className="h-14 w-14 rounded-xl bg-[#070A0D] border border-[#171F28] flex items-center justify-center flex-shrink-0 text-zinc-600 md:h-36 md:w-full md:rounded-none md:border-0 md:border-b md:border-[#171F28] pixel-scanlines">
         <Lock className="w-5 h-5 md:w-7 md:h-7" />
       </div>
 

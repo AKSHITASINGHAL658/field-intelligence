@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle2, MessageSquare, Scale, ShieldAlert, Sparkles } 
 import { AppShell } from "@/components/layout/AppShell";
 import { DossierPlate } from "@/components/dossier/DossierPlate";
 import { HazardCard } from "@/components/dossier/HazardCard";
+import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import { getPlantById, plants } from "@/data/plantDatabase";
 
 interface SpeciesPageProps {
@@ -97,6 +98,7 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
 
         <div className="space-y-4 lg:col-span-3">
         {/* Habitat & Native Distribution */}
+        <RevealOnScroll>
         <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] space-y-2">
           <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider font-bold">
             HABITAT & BIOGEOGRAPHY
@@ -112,8 +114,10 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
             </div>
           </div>
         </div>
+        </RevealOnScroll>
 
         {/* Ecological Role */}
+        <RevealOnScroll delayMs={80}>
         <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] space-y-2">
           <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider font-bold">
             ECOLOGICAL IMPORTANCE
@@ -122,8 +126,10 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
             {plant.ecologicalImportance}
           </p>
         </div>
+        </RevealOnScroll>
 
         {/* Threats & Conservation Actions */}
+        <RevealOnScroll delayMs={160}>
         <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] space-y-3">
           <div className="flex items-center gap-2 text-amber-400">
             <ShieldAlert className="w-4 h-4" />
@@ -162,6 +168,7 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
             </div>
           </div>
         </div>
+        </RevealOnScroll>
 
         {/* Action Buttons */}
         <div className="space-y-2 pt-2">

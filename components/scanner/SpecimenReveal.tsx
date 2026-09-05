@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight, MessageSquare, RotateCcw, Sparkles } from "lucide-react";
 import { Plant } from "@/types/plant";
 import { BotanicalPlate } from "../dossier/BotanicalPlate";
+import { PixelMascot } from "../pixel/PixelMascot";
+import { useCountUp } from "../motion/useCountUp";
 import { plants } from "@/data/plantDatabase";
 
 interface SpecimenRevealProps {
@@ -26,6 +28,19 @@ export function SpecimenReveal({
   const specimenNumber = `#${String(catalogIndex !== -1 ? catalogIndex + 1 : 1).padStart(2, "0")}`;
   const expReward = isNewDiscovery ? (plant.endemic ? 150 : 100) : 25;
 
+  // Confidence and EXP are the two numeric payoffs of the reveal — count
+  // them up from the real value rather than fading in a static number.
+  // Repeat observations skip the longer choreography further down, but
+  // still get this same small count-up so the numbers never look static.
+  const animatedConfidence = useCountUp(confidence * 100, isNewDiscovery ? 900 : 500);
+  const animatedExp = useCountUp(expReward, isNewDiscovery ? 900 : 500);
+
+  // Staged delays only for the new-discovery choreography — repeat
+  // observations render calmer and mostly settled already (see the brief:
+  // "do NOT replay the full new-discovery celebration").
+  const stage = (n: number) => (isNewDiscovery ? { "--stage-delay": `${n * 90}ms` } as React.CSSProperties : undefined);
+  const stageClass = isNewDiscovery ? "animate-stage-in" : "";
+
   return (
     <div className="w-full max-w-md mx-auto space-y-4 lg:max-w-3xl animate-reveal-in">
       {/* Top Header */}
@@ -46,8 +61,8 @@ export function SpecimenReveal({
           isNewDiscovery ? "animate-glow-once" : ""
         }`}
       >
-        {/* Visual Plate */}
-        <div className="relative lg:w-2/5 lg:flex-shrink-0">
+        {/* Visual Plate — "assembles" into place rather than a plain fade */}
+        <div className="relative lg:w-2/5 lg:flex-shrink-0 animate-frame-assemble">
           <BotanicalPlate
             plant={plant}
             confidence={confidence}
@@ -66,11 +81,18 @@ export function SpecimenReveal({
               REPEAT OBSERVATION
             </div>
           )}
+
+          {/* A quick mascot cameo — only for the genuine celebration moment */}
+          {isNewDiscovery && (
+            <div className="hidden lg:flex absolute -top-3 -right-3 h-10 w-10 rounded-full bg-[#0C1015] border border-emerald-500/40 items-center justify-center shadow-lg">
+              <PixelMascot size={26} expression="discovery" />
+            </div>
+          )}
         </div>
 
         {/* Taxonomy, Specs, Confidence & Actions */}
         <div className="space-y-4 lg:flex-1 lg:min-w-0">
-        <div className="pt-2 lg:pt-0 space-y-1 text-left">
+        <div className={`pt-2 lg:pt-0 space-y-1 text-left ${stageClass}`} style={stage(1)}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
               SPECIMEN {specimenNumber}
@@ -85,7 +107,7 @@ export function SpecimenReveal({
         </div>
 
         {/* 2-Column Meta Specs */}
-        <div className="grid grid-cols-2 gap-2 text-left pt-1">
+        <div className={`grid grid-cols-2 gap-2 text-left pt-1 ${stageClass}`} style={stage(2)}>
           <div className="p-2.5 rounded-xl bg-[#090D11] border border-[#1E2732]">
             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
               FAMILY
@@ -105,20 +127,20 @@ export function SpecimenReveal({
         </div>
 
         {/* Real Model Confidence & Research Reward */}
-        <div className="p-3 rounded-2xl bg-[#090D11] border border-[#1E2732] text-left space-y-2">
+        <div className={`p-3 rounded-2xl bg-[#090D11] border border-[#1E2732] text-left space-y-2 ${stageClass}`} style={stage(3)}>
           <div className="flex justify-between items-center text-xs font-mono">
             <span className="text-zinc-400 uppercase">MODEL CONFIDENCE</span>
-            <span className="text-emerald-400 font-bold">{Math.round(confidence * 100)}%</span>
+            <span className="text-emerald-400 font-bold tabular-nums">{Math.round(animatedConfidence)}%</span>
           </div>
 
           <div className="flex justify-between items-center text-xs font-mono pt-1 border-t border-[#171F28]">
             <span className="text-zinc-500 uppercase">FIELD REWARD</span>
-            <span className="text-amber-400 font-bold">+{expReward} FIELD EXP</span>
+            <span className="text-amber-400 font-bold tabular-nums">+{Math.round(animatedExp)} FIELD EXP</span>
           </div>
         </div>
 
         {/* Primary Action Buttons */}
-        <div className="space-y-2 pt-1">
+        <div className={`space-y-2 pt-1 ${stageClass}`} style={stage(4)}>
           <Link
             href={`/species/${plant.id}`}
             className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.4)]"

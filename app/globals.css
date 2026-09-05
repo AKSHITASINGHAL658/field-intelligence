@@ -183,6 +183,211 @@
   animation: mascot-pop 0.25s ease-out both, mascot-idle 2.8s ease-in-out 0.25s infinite;
 }
 
+/* ============================================================
+   Phase 4 — pixel UI language, mascot life, cursor/hover layer,
+   and the expanded specimen-reveal choreography.
+   ============================================================ */
+
+/* Pixel divider — crisp dashed rule, tint via text color (currentColor) */
+.pixel-divider {
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 4px,
+    transparent 4px 8px
+  );
+}
+
+/* Faint targeting grid for the scanner viewfinder — cheap background-image */
+.scanner-grid {
+  background-image:
+    linear-gradient(rgba(52, 211, 153, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(52, 211, 153, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Pixel scanline texture — cheap background-image, no per-frame cost */
+.pixel-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Locked-card shimmer sweep — a single diagonal highlight drifting across.
+   Needs `position: relative; overflow: hidden` on the host. */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.pixel-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.07) 50%, transparent 65%);
+  animation: shimmer-sweep 3.2s ease-in-out infinite;
+}
+
+/* Mascot: idle blink (separate from the bob so expressions with custom eyes
+   can opt out by simply not wrapping their eyes in .mascot-eyes) */
+@keyframes mascot-blink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+.mascot-eyes {
+  transform-origin: center;
+  animation: mascot-blink 5s ease-in-out infinite;
+}
+
+/* Mascot sleeping "zzz" drift */
+@keyframes mascot-zzz {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(6px, -10px) scale(1.1);
+  }
+}
+
+.animate-mascot-zzz {
+  animation: mascot-zzz 2.4s ease-out infinite;
+}
+
+/* Pixel burst — a small ring of squares flying outward once, used for
+   discovery celebrations and brand/logo hover. Deterministic angles are
+   supplied per-particle via the --burst-angle custom property so nothing
+   here depends on Math.random() (keeps server/client output irrelevant
+   since this only ever mounts client-side after an interaction). */
+@keyframes pixel-burst {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--burst-angle, 0deg)) translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--burst-angle, 0deg)) translateY(-20px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.animate-pixel-burst {
+  animation: pixel-burst 0.55s ease-out both;
+}
+
+/* Pixel loader — retro sequential blink, replaces a spinner where the
+   field-instrument identity should show through */
+@keyframes pixel-blink {
+  0%, 80%, 100% {
+    opacity: 0.2;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.animate-pixel-blink {
+  animation: pixel-blink 1.2s ease-in-out infinite;
+}
+
+/* Scanner edge-particles — small fragments sweeping along the reticle's
+   top/bottom edges while analyzing. Transform-only, cheap. */
+@keyframes edge-sweep-x {
+  0%, 100% {
+    left: 6%;
+  }
+  50% {
+    left: 90%;
+  }
+}
+
+.animate-edge-sweep {
+  animation: edge-sweep-x 2.6s ease-in-out infinite;
+}
+
+/* Mascot "scanning" eye sweep — SVG geometry needs transform, not left/top */
+@keyframes mascot-scan-sweep {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+.animate-mascot-scan-sweep {
+  animation: mascot-scan-sweep 1.6s ease-in-out infinite;
+}
+
+/* Specimen reveal — staged choreography. Each piece fades/rises in with an
+   explicit delay so the sequence reads scan -> frame -> identity -> stats
+   -> reward rather than everything appearing at once. */
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stage-in {
+  animation: stage-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--stage-delay, 0ms);
+}
+
+/* Frame assembly — a quick pixelated "snap into place" for the visual
+   plate, using a stepped easing for one beat before settling smoothly. */
+@keyframes frame-assemble {
+  0% {
+    opacity: 0;
+    clip-path: inset(50% 50% 50% 50%);
+  }
+  50% {
+    opacity: 1;
+    clip-path: inset(15% 15% 15% 15%);
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0% 0% 0% 0%);
+  }
+}
+
+.animate-frame-assemble {
+  animation: frame-assemble 0.5s steps(4, end) both;
+}
+
+/* Cursor glow — a soft radial tint (no blur filter) that tracks the
+   pointer via a transform set from JS. Gradient-based so there's no
+   expensive blur compositing. */
+.cursor-glow {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.07), transparent 70%);
+  will-change: transform;
+}
+
 /* Respect reduced-motion: keep state changes instant, drop decorative motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-scan-laser,
@@ -194,8 +399,20 @@
   .animate-message-in,
   .animate-stagger-in,
   .animate-mascot-idle,
+  .mascot-eyes,
+  .animate-mascot-zzz,
+  .animate-pixel-blink,
+  .animate-edge-sweep,
+  .animate-mascot-scan-sweep,
+  .animate-stage-in,
+  .animate-frame-assemble,
   .animate-pulse {
     animation: none !important;
+  }
+
+  .animate-pixel-burst,
+  .pixel-shimmer::after {
+    display: none;
   }
 
   .scroll-reveal {

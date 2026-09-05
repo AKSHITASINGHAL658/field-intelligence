@@ -7,8 +7,10 @@ import { ArrowLeft, Image as ImageIcon, Zap, ZapOff, LoaderCircle, AlertCircle }
 import { AppShell } from "@/components/layout/AppShell";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
 import { PixelReticle } from "@/components/pixel/PixelReticle";
+import { PixelLoader } from "@/components/pixel/PixelLoader";
 import { SpecimenReveal } from "@/components/scanner/SpecimenReveal";
 import { classifyImage } from "@/lib/plantClassifier";
+import { useMagnetic } from "@/components/motion/useMagnetic";
 import { useExplorerStore } from "@/lib/useExplorerStore";
 import { ClassifyResponse } from "@/types/api";
 import { Plant } from "@/types/plant";
@@ -23,6 +25,8 @@ export default function ScannerPage() {
   const [isNewDiscovery, setIsNewDiscovery] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [torchActive, setTorchActive] = useState(false);
+  const { ref: shutterRef, onMouseMove: onShutterMove, onMouseLeave: onShutterLeave } =
+    useMagnetic<HTMLButtonElement>(8);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -280,6 +284,11 @@ export default function ScannerPage() {
                 />
               )}
 
+              {/* Faint targeting grid behind the reticle */}
+              {(phase === "camera-live" || phase === "analyzing") && (
+                <div className="absolute inset-0 scanner-grid pointer-events-none" aria-hidden="true" />
+              )}
+
               {/* "SPECIMEN IN VIEW" Top Indicator */}
               <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#06080A]/85 backdrop-blur-md border border-emerald-500/40 rounded-full px-3 py-1 flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 tracking-wider uppercase z-20">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -292,7 +301,7 @@ export default function ScannerPage() {
               {/* Camera Initializing Overlay */}
               {phase === "idle" && (
                 <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
-                  <LoaderCircle className="w-6 h-6 text-emerald-400 animate-spin" />
+                  <PixelLoader />
                   <p className="text-xs font-mono text-zinc-400">
                     Requesting camera access...
                   </p>
@@ -301,8 +310,12 @@ export default function ScannerPage() {
 
               {/* Error Message Overlay */}
               {phase === "error" && (
-                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-6 flex flex-col items-center justify-center text-center text-zinc-300 space-y-3 z-30">
-                  <AlertCircle className="w-8 h-8 text-amber-400" />
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-6 flex flex-col items-center justify-center text-center text-zinc-300 space-y-3 z-30 animate-stage-in">
+                  {errorMessage?.toLowerCase().includes("confidence") ? (
+                    <PixelMascot size={40} expression="confused" />
+                  ) : (
+                    <AlertCircle className="w-8 h-8 text-amber-400" />
+                  )}
                   <p className="text-xs leading-relaxed max-w-xs">{errorMessage}</p>
                   <div className="flex gap-2 pt-2">
                     <button
@@ -338,7 +351,13 @@ export default function ScannerPage() {
                 <div className="h-10 w-10 rounded-xl bg-[#141B22] border border-emerald-500/30 flex items-center justify-center">
                   <PixelMascot
                     size={28}
-                    expression={phase === "analyzing" ? "analyzing" : "happy"}
+                    expression={
+                      phase === "analyzing"
+                        ? "analyzing"
+                        : phase === "camera-live"
+                          ? "scanning"
+                          : "happy"
+                    }
                   />
                 </div>
                 <div className="space-y-0.5 text-left">
@@ -400,6 +419,9 @@ export default function ScannerPage() {
 
               {/* Shutter Identify Button */}
               <button
+                ref={shutterRef}
+                onMouseMove={onShutterMove}
+                onMouseLeave={onShutterLeave}
                 onClick={handleCapture}
                 disabled={phase === "analyzing"}
                 className="flex-[2] flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs tracking-wider uppercase transition-all active:scale-[0.97] shadow-[0_0_25px_rgba(16,185,129,0.4)] disabled:opacity-60 disabled:active:scale-100"

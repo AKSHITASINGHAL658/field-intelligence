@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
 import { SpecimenCard } from "@/components/collection/SpecimenCard";
 import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
+import { ConservationSection } from "@/components/home/ConservationSection";
 import { useExplorerStore } from "@/lib/useExplorerStore";
 import { plants } from "@/data/plantDatabase";
 
@@ -28,7 +29,8 @@ export default function HomePage() {
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-5 space-y-5 md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0 lg:items-start">
+      <div className="max-w-md mx-auto px-4 py-5 space-y-5 md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8">
+      <div className="space-y-5 lg:space-y-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0 lg:items-start">
       <div className="lg:col-span-2 space-y-5 lg:space-y-6">
         {/* 1. Sprout-OS Field Companion Card */}
         <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 lg:p-7 shadow-xl space-y-4">
@@ -213,6 +215,12 @@ export default function HomePage() {
           </div>
         </section>
         </RevealOnScroll>
+      </div>
+      </div>
+
+      {/* 5. Conservation Awareness — required product section */}
+      <div className="pt-5 lg:pt-6">
+        <ConservationSection />
       </div>
       </div>
     </AppShell>
