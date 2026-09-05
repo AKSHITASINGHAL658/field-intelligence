@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Plant } from "@/types/plant";
 import { Leaf, Globe, ShieldAlert, Sparkles, X, Trophy, ExternalLink } from "lucide-react";
+import { PixelMascot } from "@/components/pixel/PixelMascot";
 
 interface AROverlayProps {
   plant: Plant;
@@ -12,90 +13,98 @@ interface AROverlayProps {
 
 export function AROverlay({ plant, onClose, xpEarned = 100 }: AROverlayProps) {
   return (
-    <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between p-4 sm:p-5 animate-reveal-in">
-      {/* Top HUD: XP Badge & Close Button */}
+    <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between p-3 sm:p-4 font-mono">
+      {/* Arcade Top HUD */}
       <div className="flex items-center justify-between w-full">
-        <div className="pointer-events-auto backdrop-blur-md bg-emerald-950/40 border border-emerald-400/50 rounded-full px-3.5 py-1.5 flex items-center gap-2 text-emerald-300 text-xs font-bold shadow-[0_0_15px_rgba(16,185,129,0.25)] animate-bounce">
-          <Trophy className="w-3.5 h-3.5 text-amber-400" />
-          <span>+{xpEarned} XP GAINED</span>
+        {/* Pixel XP Score Badge */}
+        <div className="pointer-events-auto bg-black/80 border-4 border-yellow-400 px-3 py-1 flex items-center gap-2 text-yellow-300 text-xs font-bold shadow-[4px_4px_0px_#000000] animate-bounce">
+          <Trophy className="w-4 h-4 text-amber-400" />
+          <span className="tracking-widest">+{xpEarned} XP UNLOCKED!</span>
         </div>
 
+        {/* Arcade Exit Button */}
         {onClose && (
           <button
             onClick={onClose}
-            className="pointer-events-auto backdrop-blur-md bg-black/40 border border-white/30 text-white hover:bg-white/20 rounded-full p-2 transition-all active:scale-95 shadow-lg"
+            className="pointer-events-auto bg-red-600 hover:bg-red-500 border-2 border-black text-white p-1.5 shadow-[2px_2px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5"
             aria-label="Close AR view"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 stroke-[3]" />
           </button>
         )}
       </div>
 
-      {/* Center AR Target Tracker */}
-      <div className="relative self-center h-36 w-36 sm:h-44 sm:w-44 border-2 border-dashed border-emerald-400/80 rounded-full flex items-center justify-center animate-pulse pointer-events-none">
-        <div className="h-3 w-3 bg-emerald-400 rounded-full shadow-[0_0_15px_#34d399]" />
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-mono tracking-widest text-emerald-300 uppercase backdrop-blur-md bg-black/60 px-2.5 py-0.5 rounded-full border border-emerald-400/50 shadow-md">
+      {/* Arcade Crosshair Target Tracker */}
+      <div className="relative self-center h-32 w-32 sm:h-40 sm:w-40 border-4 border-dashed border-emerald-400 flex items-center justify-center animate-pulse pointer-events-none">
+        <div className="h-4 w-4 bg-emerald-400 border-2 border-black shadow-[0_0_10px_#34d399]" />
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold tracking-wider text-emerald-300 bg-black border-2 border-emerald-400 px-2 py-0.5 uppercase shadow-[2px_2px_0px_#000]">
           {plant.scientificName}
         </div>
       </div>
 
-      {/* Transparent Liquid Glass Flash Card */}
-      <div className="pointer-events-auto backdrop-blur-xl bg-white/10 border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-3xl p-4 sm:p-5 text-white space-y-3 backdrop-saturate-150 transition-all">
+      {/* Arcade Pixel Flash Card Container */}
+      <div className="pointer-events-auto relative bg-black/85 border-4 border-emerald-500 p-3 sm:p-4 text-white space-y-3 shadow-[6px_6px_0px_#000000]">
+        
+        {/* Floating Side Mascot on Card Header */}
+        <div className="absolute -top-7 right-4 animate-bounce [animation-duration:2s]">
+          <PixelMascot size={32} expression="happy" />
+        </div>
+
         {/* Card Header */}
-        <div className="flex justify-between items-start border-b border-white/15 pb-2.5">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <h2 className="text-lg font-extrabold tracking-tight text-white drop-shadow-sm">
-                {plant.commonName}
-              </h2>
-            </div>
-            <p className="text-xs italic text-zinc-300 mt-0.5">{plant.scientificName}</p>
+        <div className="border-b-2 border-dashed border-emerald-800 pb-2">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-yellow-400" />
+            <h2 className="text-base sm:text-lg font-black tracking-wider text-emerald-300 uppercase">
+              {plant.commonName}
+            </h2>
           </div>
-          <span className="backdrop-blur-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
-            {plant.family}
-          </span>
+          <div className="flex justify-between items-center mt-1">
+            <p className="text-[11px] italic text-zinc-400">{plant.scientificName}</p>
+            <span className="bg-emerald-950 border border-emerald-400 text-emerald-300 text-[9px] font-bold uppercase px-2 py-0.5">
+              {plant.family}
+            </span>
+          </div>
         </div>
 
         {/* Quick Details Grid */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="backdrop-blur-md bg-black/25 p-2.5 rounded-2xl border border-white/10">
-            <span className="text-zinc-300 flex items-center gap-1 font-semibold text-[10px] uppercase">
+        <div className="grid grid-cols-2 gap-2 text-[11px]">
+          <div className="bg-[#0c140d] p-2 border-2 border-emerald-900/80">
+            <span className="text-emerald-400 flex items-center gap-1 font-bold text-[9px] uppercase">
               <Globe className="w-3 h-3 text-emerald-400" /> Native Region
             </span>
-            <p className="text-white mt-1 font-medium text-xs truncate">
-              {plant.nativeRegion} {plant.endemic ? "(Endemic)" : ""}
+            <p className="text-zinc-200 mt-0.5 truncate font-bold">
+              {plant.nativeRegion}
             </p>
           </div>
 
-          <div className="backdrop-blur-md bg-black/25 p-2.5 rounded-2xl border border-white/10">
-            <span className="text-zinc-300 flex items-center gap-1 font-semibold text-[10px] uppercase">
-              <ShieldAlert className="w-3 h-3 text-emerald-400" /> Conservation
+          <div className="bg-[#0c140d] p-2 border-2 border-emerald-900/80">
+            <span className="text-emerald-400 flex items-center gap-1 font-bold text-[9px] uppercase">
+              <ShieldAlert className="w-3 h-3 text-emerald-400" /> Status
             </span>
-            <p className="text-white mt-1 font-medium text-xs truncate">
+            <p className="text-zinc-200 mt-0.5 truncate font-bold">
               {plant.conservationStatus}
             </p>
           </div>
         </div>
 
         {/* Ecological Importance */}
-        <div className="backdrop-blur-md bg-black/25 p-2.5 rounded-2xl border border-white/10 text-xs">
-          <span className="text-zinc-300 flex items-center gap-1 font-semibold text-[10px] uppercase mb-1">
-            <Leaf className="w-3 h-3 text-emerald-400" /> Ecological Role
+        <div className="bg-[#0c140d] p-2 border-2 border-emerald-900/80 text-[10px]">
+          <span className="text-emerald-400 flex items-center gap-1 font-bold text-[9px] uppercase mb-0.5">
+            <Leaf className="w-3 h-3 text-emerald-400" /> Role
           </span>
-          <p className="text-zinc-200 text-[11px] leading-relaxed line-clamp-2">
+          <p className="text-zinc-300 line-clamp-2 leading-snug">
             {plant.ecologicalImportance}
           </p>
         </div>
 
-        {/* Action Link to Full Dossier */}
-        <div className="pt-1 flex items-center justify-between">
+        {/* Action Button */}
+        <div className="pt-0.5">
           <Link
             href={`/species/${plant.id}`}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-500/80 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase tracking-wider transition-all active:scale-[0.98] shadow-[0_0_15px_rgba(16,185,129,0.3)] backdrop-blur-md"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-emerald-500 hover:bg-emerald-400 border-2 border-black text-black font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5"
           >
-            <span>View Full Dossier</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <span>OPEN SPECIES DOSSIER</span>
+            <ExternalLink className="w-3 h-3 stroke-[3]" />
           </Link>
         </div>
       </div>
