@@ -49,3 +49,162 @@
 .animate-pulse-gentle {
   animation: pulse-gentle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Page content entrance — plays once per route mount since each page.tsx
+   remounts its own AppShell (there's no shared persistent layout here). */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-in {
+  animation: page-in 0.35s ease-out both;
+}
+
+/* Specimen reveal choreography */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-reveal-in {
+  animation: reveal-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes reveal-pill-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.animate-reveal-pill-in {
+  animation: reveal-pill-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+/* One-shot celebratory glow — reserved for genuinely new discoveries so it
+   stays a meaningful signal rather than firing on every repeat scan. */
+@keyframes glow-pulse-once {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+  }
+  30% {
+    box-shadow: 0 0 32px 4px rgba(16, 185, 129, 0.35);
+  }
+}
+
+.animate-glow-once {
+  animation: glow-pulse-once 1.1s ease-out 0.15s both;
+}
+
+/* Chat message entrance — only newly-appended messages actually mount,
+   earlier ones keep their DOM node across re-renders, so this plays once
+   per message rather than replaying the whole log. */
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-message-in {
+  animation: message-in 0.25s ease-out both;
+}
+
+/* Staggered list/grid entrance. Pair with an inline --stagger-delay. */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger-in {
+  animation: stagger-in 0.4s ease-out both;
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+/* Scroll-triggered section reveal, toggled via IntersectionObserver */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Idle pixel-mascot bob + a quick pop whenever its expression changes */
+@keyframes mascot-idle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes mascot-pop {
+  from {
+    transform: scale(0.85);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-mascot-idle {
+  animation: mascot-pop 0.25s ease-out both, mascot-idle 2.8s ease-in-out 0.25s infinite;
+}
+
+/* Respect reduced-motion: keep state changes instant, drop decorative motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-scan-laser,
+  .animate-pulse-gentle,
+  .animate-page-in,
+  .animate-reveal-in,
+  .animate-reveal-pill-in,
+  .animate-glow-once,
+  .animate-message-in,
+  .animate-stagger-in,
+  .animate-mascot-idle,
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  .scroll-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+  }
+}

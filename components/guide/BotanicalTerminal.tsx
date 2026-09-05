@@ -19,6 +19,20 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // initialPlantId comes from the ?plantId= query param. Navigating between
+  // species while already on /guide (e.g. one "Ask AI Guide" link to
+  // another) changes the prop without remounting this component, so the
+  // selection has to be re-synced when it changes rather than only seeded
+  // once. Adjusting state during render (vs. an effect) avoids an extra
+  // render pass — see https://react.dev/learn/you-might-not-need-an-effect
+  const [prevInitialPlantId, setPrevInitialPlantId] = useState(initialPlantId);
+  if (initialPlantId !== prevInitialPlantId) {
+    setPrevInitialPlantId(initialPlantId);
+    if (initialPlantId) {
+      setSelectedPlantId(initialPlantId);
+    }
+  }
+
   const selectedPlant = plants.find((p) => p.id === selectedPlantId) || plants[0];
 
   const suggestedPrompts = [
@@ -74,7 +88,7 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
+    <div className="w-full max-w-2xl mx-auto space-y-4 lg:max-w-5xl">
       {/* Specimen Selector Pill Strip */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <span className="text-xs font-mono text-zinc-500 uppercase flex-shrink-0">
@@ -84,7 +98,7 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
           <button
             key={plant.id}
             onClick={() => setSelectedPlantId(plant.id)}
-            className={`px-3 py-1 rounded-full text-xs font-mono transition-all flex-shrink-0 ${
+            className={`px-3 py-1 rounded-full text-xs font-mono transition-all active:scale-95 flex-shrink-0 ${
               selectedPlantId === plant.id
                 ? "bg-emerald-500 text-black font-bold border border-emerald-400"
                 : "bg-[#0C1015] text-zinc-400 border border-[#1E2732] hover:text-white"
@@ -95,8 +109,9 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
         ))}
       </div>
 
+      <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
       {/* Terminal Container */}
-      <div className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-4 sm:p-6 shadow-2xl flex flex-col h-[520px]">
+      <div className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-4 sm:p-6 shadow-2xl flex flex-col h-[520px] lg:col-span-2 lg:h-[600px]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#1E2732] pb-3 mb-4">
           <div className="flex items-center gap-3">
@@ -138,7 +153,7 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
                   <button
                     key={idx}
                     onClick={() => sendQuery(prompt)}
-                    className="text-left p-2.5 rounded-xl bg-[#141B22] hover:bg-[#1A232D] text-zinc-300 border border-[#1E2732] hover:border-emerald-500/40 transition-colors text-[11px]"
+                    className="text-left p-2.5 rounded-xl bg-[#141B22] hover:bg-[#1A232D] text-zinc-300 border border-[#1E2732] hover:border-emerald-500/40 transition-all active:scale-[0.98] text-[11px]"
                   >
                     <Sparkles className="w-3 h-3 text-emerald-400 inline mr-1.5" />
                     {prompt}
@@ -150,7 +165,7 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
             messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`p-3 rounded-2xl max-w-[85%] leading-relaxed ${
+                className={`p-3 rounded-2xl max-w-[85%] leading-relaxed animate-message-in ${
                   msg.sender === "user"
                     ? "ml-auto bg-emerald-500 text-black font-medium"
                     : "bg-[#141B22] border border-[#1E2732] text-zinc-200"
@@ -161,7 +176,7 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
             ))
           )}
           {loading && (
-            <div className="flex items-center gap-2 text-xs text-emerald-400 font-mono p-2">
+            <div className="flex items-center gap-2 text-xs text-emerald-400 font-mono p-2 animate-message-in">
               <LoaderCircle className="w-4 h-4 animate-spin" />
               <span>CONSULTING BOTANICAL REPOSITORY...</span>
             </div>
@@ -187,11 +202,68 @@ export function BotanicalTerminal({ initialPlantId }: BotanicalTerminalProps) {
             type="submit"
             disabled={loading || !input.trim()}
             aria-label="Send Query"
-            className="h-9 w-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-black flex items-center justify-center transition-all flex-shrink-0"
+            className="h-9 w-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-black flex items-center justify-center transition-all active:scale-90 disabled:active:scale-100 flex-shrink-0"
           >
             <Send className="w-4 h-4" />
           </button>
         </form>
+      </div>
+
+      {/* Specimen Quick Reference — desktop-only supporting panel, pulled
+          straight from the same verified plant record as the terminal's
+          context anchor (no separate/invented data). */}
+      <div className="hidden lg:block lg:col-span-1 rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 space-y-4 h-[600px] overflow-y-auto">
+        <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+          Specimen Quick Reference
+        </h4>
+
+        <div className="space-y-1">
+          <h3 className="text-base font-bold text-white">{selectedPlant.commonName}</h3>
+          <p className="text-xs italic text-zinc-400">{selectedPlant.scientificName}</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="p-2.5 rounded-xl bg-[#090D11] border border-[#1E2732]">
+            <span className="text-[9px] font-mono text-zinc-500 uppercase block">Family</span>
+            <p className="text-xs font-medium text-zinc-200 mt-0.5 truncate">
+              {selectedPlant.family}
+            </p>
+          </div>
+          <div className="p-2.5 rounded-xl bg-[#090D11] border border-[#1E2732]">
+            <span className="text-[9px] font-mono text-zinc-500 uppercase block">
+              Conservation
+            </span>
+            <p className="text-xs font-medium text-emerald-400 mt-0.5 truncate">
+              {selectedPlant.conservationStatus}
+            </p>
+          </div>
+        </div>
+
+        <div className="p-2.5 rounded-xl bg-[#090D11] border border-[#1E2732]">
+          <span className="text-[9px] font-mono text-zinc-500 uppercase block">
+            Native Region
+          </span>
+          <p className="text-xs font-medium text-zinc-200 mt-0.5">
+            {selectedPlant.nativeRegion}
+          </p>
+        </div>
+
+        {selectedPlant.identificationClues.length > 0 && (
+          <div className="space-y-1.5">
+            <span className="text-[9px] font-mono text-zinc-500 uppercase block">
+              Identification Clues
+            </span>
+            <ul className="space-y-1.5 text-xs text-zinc-300">
+              {selectedPlant.identificationClues.map((clue, idx) => (
+                <li key={idx} className="flex items-start gap-1.5">
+                  <span className="text-emerald-500 font-bold font-mono">▸</span>
+                  <span className="leading-relaxed">{clue}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
       </div>
     </div>
   );

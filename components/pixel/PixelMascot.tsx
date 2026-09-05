@@ -13,15 +13,20 @@ export function PixelMascot({
   className = "",
   expression = "happy",
 }: PixelMascotProps) {
-  // Sprout-OS: Authentic pixel-art botanical frog with sprout on head
+  // Sprout-OS: Authentic pixel-art botanical frog with sprout on head.
+  // Keying by expression forces a remount whenever it changes, which
+  // replays the pop-then-idle-bob animation as a small "reaction". The
+  // bob itself is skipped while analyzing so it doesn't compete with the
+  // scanner's own scanning-laser motion for attention.
   return (
     <svg
+      key={expression}
       width={size}
       height={size}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`pixel-crisp ${className}`}
+      className={`pixel-crisp ${expression !== "analyzing" ? "animate-mascot-idle" : ""} ${className}`}
       style={{ imageRendering: "pixelated", shapeRendering: "crispEdges" }}
     >
       {/* Sprout Leaves on Head */}

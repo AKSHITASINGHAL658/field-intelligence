@@ -6,6 +6,7 @@ import { Camera, Check, Lock, Star, HelpCircle, ArrowRight, ClipboardList, Layer
 import { AppShell } from "@/components/layout/AppShell";
 import { PixelMascot } from "@/components/pixel/PixelMascot";
 import { SpecimenCard } from "@/components/collection/SpecimenCard";
+import { RevealOnScroll } from "@/components/motion/RevealOnScroll";
 import { useExplorerStore } from "@/lib/useExplorerStore";
 import { plants } from "@/data/plantDatabase";
 
@@ -16,14 +17,21 @@ export default function HomePage() {
   const unchartedCount = totalCatalogCount - discoveredCount;
   const progressPercent = totalCatalogCount > 0 ? (discoveredCount / totalCatalogCount) * 100 : 0;
 
-  // Recent discoveries list
-  const discoveredPlants = plants.filter((p) => isDiscovered(p.id));
+  // Recent discoveries list — most recently observed first
+  const discoveredPlants = plants
+    .filter((p) => isDiscovered(p.id))
+    .sort((a, b) => {
+      const aTime = discovered[a.id]?.lastObservedAt ?? "";
+      const bTime = discovered[b.id]?.lastObservedAt ?? "";
+      return bTime.localeCompare(aTime);
+    });
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-5 space-y-5">
+      <div className="max-w-md mx-auto px-4 py-5 space-y-5 md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8 lg:grid lg:grid-cols-3 lg:gap-6 lg:space-y-0 lg:items-start">
+      <div className="lg:col-span-2 space-y-5 lg:space-y-6">
         {/* 1. Sprout-OS Field Companion Card */}
-        <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 shadow-xl space-y-4">
+        <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 lg:p-7 shadow-xl space-y-4">
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="text-emerald-400 font-bold flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-sm bg-emerald-400" />
@@ -52,7 +60,7 @@ export default function HomePage() {
 
           <Link
             href="/scanner"
-            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)]"
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.35)]"
           >
             <Camera className="w-4 h-4" /> [ 📷 SCAN SPECIMEN ]
           </Link>
@@ -129,8 +137,11 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+      </div>
 
+      <div className="space-y-5 lg:space-y-6 lg:col-span-1">
         {/* 3. Recent Specimen Discoveries */}
+        <RevealOnScroll>
         <section className="space-y-3 text-left">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -147,18 +158,23 @@ export default function HomePage() {
 
           {discoveredPlants.length > 0 ? (
             <div className="space-y-2.5">
-              {discoveredPlants.slice(0, 3).map((plant) => {
+              {discoveredPlants.slice(0, 3).map((plant, position) => {
                 const record = discovered[plant.id];
                 const index = plants.findIndex((p) => p.id === plant.id);
                 return (
-                  <SpecimenCard
+                  <div
                     key={plant.id}
-                    plant={plant}
-                    index={index}
-                    isDiscovered={true}
-                    observationCount={record?.observationCount}
-                    customThumbnail={record?.thumbnailUrl}
-                  />
+                    className="animate-stagger-in"
+                    style={{ "--stagger-delay": `${position * 60}ms` } as React.CSSProperties}
+                  >
+                    <SpecimenCard
+                      plant={plant}
+                      index={index}
+                      isDiscovered={true}
+                      observationCount={record?.observationCount}
+                      customThumbnail={record?.thumbnailUrl}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -173,8 +189,10 @@ export default function HomePage() {
             </div>
           )}
         </section>
+        </RevealOnScroll>
 
         {/* 4. Daily Field Objective */}
+        <RevealOnScroll delayMs={100}>
         <section className="rounded-3xl bg-[#0C1015] border border-amber-500/30 p-5 shadow-xl text-left space-y-3">
           <div className="flex items-center gap-2 text-amber-400">
             <ClipboardList className="w-4 h-4" />
@@ -194,6 +212,8 @@ export default function HomePage() {
             <span className="text-zinc-500">{"// UNLOCK DOSSIER ENTRY"}</span>
           </div>
         </section>
+        </RevealOnScroll>
+      </div>
       </div>
     </AppShell>
   );

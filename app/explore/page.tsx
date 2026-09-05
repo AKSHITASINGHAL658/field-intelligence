@@ -25,7 +25,7 @@ export default function ExplorePage() {
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left">
+      <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8">
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-white">Flora Explorer</h1>
@@ -62,7 +62,7 @@ export default function ExplorePage() {
             <button
               key={fam}
               onClick={() => setSelectedFamily(fam)}
-              className={`px-3 py-1 rounded-full text-[11px] font-mono whitespace-nowrap transition-all ${
+              className={`px-3 py-1 rounded-full text-[11px] font-mono whitespace-nowrap transition-all active:scale-95 ${
                 selectedFamily === fam
                   ? "bg-emerald-500 text-black font-bold"
                   : "bg-[#0C1015] text-zinc-400 border border-[#1E2732] hover:text-white"
@@ -73,14 +73,15 @@ export default function ExplorePage() {
           ))}
         </div>
 
-        {/* Results List */}
-        <div className="space-y-2.5">
+        {/* Results Grid */}
+        <div className="space-y-2.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-3 lg:grid-cols-3">
           {filteredPlants.length > 0 ? (
             filteredPlants.map((plant, idx) => (
               <Link
                 key={plant.id}
                 href={`/species/${plant.id}`}
-                className="group p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] hover:border-emerald-500/50 transition-all block space-y-2"
+                className="group p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] hover:border-emerald-500/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 transition-all duration-200 active:scale-[0.98] block space-y-2 animate-stagger-in"
+                style={{ "--stagger-delay": `${Math.min(idx, 8) * 40}ms` } as React.CSSProperties}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono text-zinc-500">
@@ -114,7 +115,7 @@ export default function ExplorePage() {
               </Link>
             ))
           ) : (
-            <div className="p-8 text-center text-zinc-500 space-y-2">
+            <div className="p-8 text-center text-zinc-500 space-y-2 md:col-span-2 lg:col-span-3">
               <Filter className="w-6 h-6 mx-auto text-zinc-600" />
               <p className="text-xs">No matching species found in campus catalog.</p>
             </div>

@@ -221,13 +221,13 @@ export default function ScannerPage() {
     setIdentifiedPlant(null);
     setSelectedImage(null);
     setErrorMessage(null);
-    setPhase("camera-live");
+    setPhase("idle");
     startCamera();
   };
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4 md:max-w-xl lg:max-w-5xl lg:px-8 lg:py-8">
         {/* Top Header Bar */}
         <div className="flex items-center justify-between text-xs font-mono">
           <Link
@@ -256,9 +256,9 @@ export default function ScannerPage() {
 
         {/* VIEWPORT & SCANNER UI */}
         {phase !== "revealed" && (
-          <div className="space-y-4">
+          <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-5 lg:gap-6">
             {/* Viewfinder Frame Container */}
-            <div className="relative aspect-[3/4] w-full rounded-3xl overflow-hidden bg-black border border-[#1E2732] shadow-2xl flex items-center justify-center">
+            <div className="relative aspect-[3/4] lg:aspect-[4/3] w-full rounded-3xl overflow-hidden bg-black border border-[#1E2732] shadow-2xl flex items-center justify-center lg:col-start-1 lg:col-span-3 lg:row-start-1">
               {/* Live Video Stream */}
               <video
                 ref={videoRef}
@@ -289,6 +289,16 @@ export default function ScannerPage() {
               {/* Optical Targeting Reticle */}
               <PixelReticle scanning={phase === "analyzing"} />
 
+              {/* Camera Initializing Overlay */}
+              {phase === "idle" && (
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-20">
+                  <LoaderCircle className="w-6 h-6 text-emerald-400 animate-spin" />
+                  <p className="text-xs font-mono text-zinc-400">
+                    Requesting camera access...
+                  </p>
+                </div>
+              )}
+
               {/* Error Message Overlay */}
               {phase === "error" && (
                 <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-6 flex flex-col items-center justify-center text-center text-zinc-300 space-y-3 z-30">
@@ -297,13 +307,13 @@ export default function ScannerPage() {
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={startCamera}
-                      className="px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold font-mono"
+                      className="px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold font-mono transition-transform active:scale-95"
                     >
                       RETRY CAMERA
                     </button>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 rounded-xl bg-[#141B22] border border-[#1E2732] text-white text-xs font-mono"
+                      className="px-4 py-2 rounded-xl bg-[#141B22] border border-[#1E2732] text-white text-xs font-mono transition-transform active:scale-95"
                     >
                       UPLOAD PHOTO
                     </button>
@@ -323,7 +333,7 @@ export default function ScannerPage() {
             />
 
             {/* Botanical Feature Analysis Card */}
-            <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] flex items-center justify-between lg:col-start-4 lg:col-span-2 lg:row-start-1">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-[#141B22] border border-emerald-500/30 flex items-center justify-center">
                   <PixelMascot
@@ -346,9 +356,9 @@ export default function ScannerPage() {
               </div>
 
               <span
-                className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+                className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border transition-colors ${
                   phase === "analyzing"
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse-gentle"
                     : "bg-zinc-800 text-zinc-400 border-zinc-700"
                 }`}
               >
@@ -356,12 +366,33 @@ export default function ScannerPage() {
               </span>
             </div>
 
+            {/* Scanning Tips — desktop-only supporting panel */}
+            <div className="hidden lg:block lg:col-start-4 lg:col-span-2 lg:row-start-2 p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] space-y-3">
+              <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+                Scanning Tips
+              </h4>
+              <ul className="space-y-2 text-xs text-zinc-400 font-sans">
+                <li className="flex items-start gap-2">
+                  <span className="text-emerald-500 font-bold font-mono">▸</span>
+                  <span>Center the plant in the reticle and fill most of the frame.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-emerald-500 font-bold font-mono">▸</span>
+                  <span>Use even, natural lighting — avoid harsh backlight or deep shadow.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-emerald-500 font-bold font-mono">▸</span>
+                  <span>Hold steady until analysis completes to avoid a blurry capture.</span>
+                </li>
+              </ul>
+            </div>
+
             {/* Bottom Action Controls */}
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex items-center justify-between gap-3 pt-1 lg:col-start-1 lg:col-span-3 lg:row-start-2">
               {/* Gallery upload */}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl bg-[#0C1015] hover:bg-[#141B22] border border-[#1E2732] text-zinc-300 transition-all text-[10px] font-mono font-bold"
+                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl bg-[#0C1015] hover:bg-[#141B22] border border-[#1E2732] text-zinc-300 transition-all active:scale-95 text-[10px] font-mono font-bold"
               >
                 <ImageIcon className="w-5 h-5 text-emerald-400" />
                 GALLERY
@@ -371,7 +402,7 @@ export default function ScannerPage() {
               <button
                 onClick={handleCapture}
                 disabled={phase === "analyzing"}
-                className="flex-[2] flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs tracking-wider uppercase transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)] disabled:opacity-60"
+                className="flex-[2] flex items-center justify-center gap-2 py-4 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs tracking-wider uppercase transition-all active:scale-[0.97] shadow-[0_0_25px_rgba(16,185,129,0.4)] disabled:opacity-60 disabled:active:scale-100"
               >
                 {phase === "analyzing" ? (
                   <>
@@ -389,7 +420,7 @@ export default function ScannerPage() {
               {/* Torch toggle */}
               <button
                 onClick={toggleTorch}
-                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl bg-[#0C1015] hover:bg-[#141B22] border border-[#1E2732] text-zinc-300 transition-all text-[10px] font-mono font-bold"
+                className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl bg-[#0C1015] hover:bg-[#141B22] border border-[#1E2732] text-zinc-300 transition-all active:scale-95 text-[10px] font-mono font-bold"
               >
                 {torchActive ? (
                   <Zap className="w-5 h-5 text-amber-400" />

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, MessageSquare, Scale, ShieldAlert, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { BotanicalPlate } from "@/components/dossier/BotanicalPlate";
+import { DossierPlate } from "@/components/dossier/DossierPlate";
 import { HazardCard } from "@/components/dossier/HazardCard";
 import { getPlantById, plants } from "@/data/plantDatabase";
 
@@ -24,7 +24,7 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-4 space-y-4 text-left">
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4 text-left md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8">
         {/* Top Dossier Header */}
         <div className="flex items-center justify-between text-xs font-mono">
           <Link
@@ -46,8 +46,10 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
           <span className="text-emerald-400 font-bold uppercase">{plant.family}</span>
         </div>
 
+        <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-5 lg:gap-8 lg:items-start">
+        <div className="space-y-4 lg:col-span-2 lg:sticky lg:top-24">
         {/* Hero Visual Plate */}
-        <BotanicalPlate plant={plant} />
+        <DossierPlate plant={plant} />
 
         {/* Taxonomy Title Section */}
         <div className="space-y-2 pt-1">
@@ -91,7 +93,9 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
             </ul>
           </div>
         )}
+        </div>
 
+        <div className="space-y-4 lg:col-span-3">
         {/* Habitat & Native Distribution */}
         <div className="p-4 rounded-2xl bg-[#0C1015] border border-[#1E2732] space-y-2">
           <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider font-bold">
@@ -163,7 +167,7 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
         <div className="space-y-2 pt-2">
           <Link
             href={`/guide?plantId=${plant.id}`}
-            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.3)]"
           >
             <MessageSquare className="w-4 h-4" />
             Ask Field Guide About Specimen
@@ -171,11 +175,13 @@ export default async function SpeciesPage({ params }: SpeciesPageProps) {
 
           <Link
             href={`/compare?primary=${plant.id}`}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#141B22] hover:bg-[#1A232D] text-zinc-200 border border-[#1E2732] font-semibold text-xs transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#141B22] hover:bg-[#1A232D] text-zinc-200 border border-[#1E2732] font-semibold text-xs transition-all active:scale-[0.98]"
           >
             <Scale className="w-4 h-4 text-emerald-400" />
             Compare With Another Species
           </Link>
+        </div>
+        </div>
         </div>
       </div>
     </AppShell>

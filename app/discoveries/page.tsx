@@ -26,7 +26,7 @@ export default function DiscoveriesPage() {
 
   return (
     <AppShell>
-      <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left">
+      <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left md:max-w-2xl lg:max-w-6xl lg:px-8 lg:py-8">
         {/* Header Hero Card */}
         <section className="rounded-3xl bg-[#0C1015] border border-[#1E2732] p-5 shadow-xl space-y-4">
           <div className="flex items-start justify-between">
@@ -64,7 +64,7 @@ export default function DiscoveriesPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveFilter("all")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all active:scale-95 ${
               activeFilter === "all"
                 ? "bg-emerald-500 text-black shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                 : "bg-[#0C1015] text-zinc-400 border border-[#1E2732] hover:text-white"
@@ -75,7 +75,7 @@ export default function DiscoveriesPage() {
 
           <button
             onClick={() => setActiveFilter("discovered")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all active:scale-95 ${
               activeFilter === "discovered"
                 ? "bg-emerald-500 text-black shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                 : "bg-[#0C1015] text-zinc-400 border border-[#1E2732] hover:text-white"
@@ -86,7 +86,7 @@ export default function DiscoveriesPage() {
 
           <button
             onClick={() => setActiveFilter("undiscovered")}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all active:scale-95 ${
               activeFilter === "undiscovered"
                 ? "bg-emerald-500 text-black shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                 : "bg-[#0C1015] text-zinc-400 border border-[#1E2732] hover:text-white"
@@ -96,22 +96,27 @@ export default function DiscoveriesPage() {
           </button>
         </div>
 
-        {/* Specimen Card List */}
-        <div className="space-y-2.5">
-          {filteredPlants.map((plant) => {
+        {/* Specimen Card Grid */}
+        <div className="space-y-2.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-3 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredPlants.map((plant, position) => {
             const index = plants.findIndex((p) => p.id === plant.id);
             const discoveredFlag = isDiscovered(plant.id);
             const record = discovered[plant.id];
 
             return (
-              <SpecimenCard
+              <div
                 key={plant.id}
-                plant={plant}
-                index={index}
-                isDiscovered={discoveredFlag}
-                observationCount={record?.observationCount}
-                customThumbnail={record?.thumbnailUrl}
-              />
+                className="animate-stagger-in"
+                style={{ "--stagger-delay": `${Math.min(position, 8) * 40}ms` } as React.CSSProperties}
+              >
+                <SpecimenCard
+                  plant={plant}
+                  index={index}
+                  isDiscovered={discoveredFlag}
+                  observationCount={record?.observationCount}
+                  customThumbnail={record?.thumbnailUrl}
+                />
+              </div>
             );
           })}
         </div>

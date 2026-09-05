@@ -12,13 +12,29 @@ export function PixelReticle({ scanning = false }: PixelReticleProps) {
       {/* 4 Optical Corner Brackets */}
       <div className="relative h-64 w-64 sm:h-72 sm:w-72">
         {/* Top Left */}
-        <div className="absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-emerald-400" />
+        <div
+          className={`absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-emerald-400 transition-opacity ${
+            scanning ? "animate-pulse-gentle" : ""
+          }`}
+        />
         {/* Top Right */}
-        <div className="absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-emerald-400" />
+        <div
+          className={`absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-emerald-400 transition-opacity ${
+            scanning ? "animate-pulse-gentle" : ""
+          }`}
+        />
         {/* Bottom Left */}
-        <div className="absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-emerald-400" />
+        <div
+          className={`absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-emerald-400 transition-opacity ${
+            scanning ? "animate-pulse-gentle" : ""
+          }`}
+        />
         {/* Bottom Right */}
-        <div className="absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-emerald-400" />
+        <div
+          className={`absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-emerald-400 transition-opacity ${
+            scanning ? "animate-pulse-gentle" : ""
+          }`}
+        />
 
         {/* Center Crosshair [+] */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">

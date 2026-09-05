@@ -20,7 +20,7 @@ function CompareContent() {
   const plantB = plants.find((p) => p.id === plantBId) || plants[1];
 
   return (
-    <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left">
+    <div className="max-w-md mx-auto px-4 py-5 space-y-5 text-left md:max-w-2xl lg:max-w-5xl lg:px-8 lg:py-8">
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
