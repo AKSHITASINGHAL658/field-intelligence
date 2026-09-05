@@ -1,6 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
+import { plants } from "@/data/plantDatabase";
+
+export interface DiscoveredSpecimenRecord {
+  speciesId: string;
+  firstDiscoveredAt: string;
+  lastObservedAt: string;
+  observationCount: number;
+  bestConfidence: number;
+  thumbnailUrl?: string;
+}
 
 export interface Badge {
   id: string;
@@ -10,71 +20,190 @@ export interface Badge {
   unlocked: boolean;
 }
 
-function getStoredNumber(key: string, fallback: number) {
-  if (typeof window === "undefined") return fallback;
+const STORAGE_KEY_DISCOVERIES = "field_discoveries_v1";
+const STORAGE_KEY_EXP = "field_exp_v1";
+const STORAGE_KEY_SCANS = "field_total_scans_v1";
 
-  const value = Number.parseInt(localStorage.getItem(key) ?? "", 10);
-  return Number.isNaN(value) ? fallback : value;
+function loadFromStorage<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveToStorage<T>(key: string, value: T): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    window.dispatchEvent(new Event("storage_change"));
+  } catch (err) {
+    console.error(`Failed to persist ${key}:`, err);
+  }
+}
+
+function subscribe(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage_change", callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener("storage_change", callback);
+    window.removeEventListener("storage", callback);
+  };
 }
 
 export function useExplorerStore() {
-  const [xp, setXp] = useState(() => getStoredNumber("explorer_xp", 150));
-  const [scansCount, setScansCount] = useState(() =>
-    getStoredNumber("explorer_scans", 2)
+  const isHydrated = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
   );
-  const [badges, setBadges] = useState<Badge[]>([
+
+  const rawDiscoveries = useSyncExternalStore(
+    subscribe,
+    () => {
+      const val = localStorage.getItem(STORAGE_KEY_DISCOVERIES);
+      return val ?? "{}";
+    },
+    () => "{}"
+  );
+
+  const rawExp = useSyncExternalStore(
+    subscribe,
+    () => {
+      const val = localStorage.getItem(STORAGE_KEY_EXP);
+      return val ?? "0";
+    },
+    () => "0"
+  );
+
+  const rawScans = useSyncExternalStore(
+    subscribe,
+    () => {
+      const val = localStorage.getItem(STORAGE_KEY_SCANS);
+      return val ?? "0";
+    },
+    () => "0"
+  );
+
+  let discovered: Record<string, DiscoveredSpecimenRecord> = {};
+  try {
+    discovered = JSON.parse(rawDiscoveries);
+  } catch {
+    discovered = {};
+  }
+
+  const exp = Number.parseInt(rawExp, 10) || 0;
+  const totalScans = Number.parseInt(rawScans, 10) || 0;
+
+  const totalCatalogCount = plants.length; // Exactly 7
+  const discoveredCount = Object.keys(discovered).length;
+
+  const isDiscovered = (speciesId: string): boolean => {
+    return Boolean(discovered[speciesId]);
+  };
+
+  const getSpecimenRecord = (speciesId: string): DiscoveredSpecimenRecord | null => {
+    return discovered[speciesId] ?? null;
+  };
+
+  const recordObservation = (
+    speciesId: string,
+    confidence: number,
+    thumbnailUrl?: string
+  ): { isNew: boolean; expGained: number } => {
+    const plant = plants.find((p) => p.id === speciesId);
+    const currentDiscovered = loadFromStorage<Record<string, DiscoveredSpecimenRecord>>(
+      STORAGE_KEY_DISCOVERIES,
+      {}
+    );
+    const isNew = !currentDiscovered[speciesId];
+    const now = new Date().toISOString();
+
+    const expGained = isNew ? (plant?.endemic ? 150 : 100) : 25;
+    const currentExp = loadFromStorage<number>(STORAGE_KEY_EXP, 0);
+    const currentScans = loadFromStorage<number>(STORAGE_KEY_SCANS, 0);
+
+    const existingRecord = currentDiscovered[speciesId];
+    const updatedRecord: DiscoveredSpecimenRecord = existingRecord
+      ? {
+          ...existingRecord,
+          lastObservedAt: now,
+          observationCount: existingRecord.observationCount + 1,
+          bestConfidence: Math.max(existingRecord.bestConfidence, confidence),
+          thumbnailUrl: thumbnailUrl ?? existingRecord.thumbnailUrl,
+        }
+      : {
+          speciesId,
+          firstDiscoveredAt: now,
+          lastObservedAt: now,
+          observationCount: 1,
+          bestConfidence: confidence,
+          thumbnailUrl,
+        };
+
+    const newDiscovered = {
+      ...currentDiscovered,
+      [speciesId]: updatedRecord,
+    };
+
+    saveToStorage(STORAGE_KEY_DISCOVERIES, newDiscovered);
+    saveToStorage(STORAGE_KEY_EXP, currentExp + expGained);
+    saveToStorage(STORAGE_KEY_SCANS, currentScans + 1);
+
+    return { isNew, expGained };
+  };
+
+  const level = Math.floor(exp / 200) + 1;
+  const currentLevelExp = exp % 200;
+  const progressPercent = Math.min((currentLevelExp / 200) * 100, 100);
+
+  const badges: Badge[] = [
     {
       id: "first_scan",
       title: "First Contact",
-      description: "Scanned your first botanical specimen in the field.",
+      description: "Scanned your first verified botanical specimen.",
       icon: "🌱",
-      unlocked: true,
+      unlocked: discoveredCount >= 1,
     },
     {
       id: "botanist",
       title: "Field Taxonomist",
-      description: "Analyzed 3 distinct botanical species.",
+      description: "Catalogued 3 distinct campus plant species.",
       icon: "🔍",
-      unlocked: false,
+      unlocked: discoveredCount >= 3,
     },
     {
       id: "endemic",
       title: "Native Specialist",
-      description: "Identified an endemic plant species.",
+      description: "Discovered the endemic species Cleistanthus collinus.",
       icon: "⭐",
-      unlocked: true,
+      unlocked: Boolean(discovered["plant-07"]),
     },
     {
-      id: "scholar",
-      title: "RAG Scholar",
-      description: "Queried the botanical assistant 5 times.",
-      icon: "📜",
-      unlocked: false,
+      id: "master",
+      title: "Flora Master",
+      description: "Completed the entire 7-species campus botanical index.",
+      icon: "🏆",
+      unlocked: discoveredCount >= totalCatalogCount,
     },
-  ]);
+  ];
 
-  const addScanXp = (isEndemic: boolean) => {
-    const newXp = xp + 100;
-    const newScans = scansCount + 1;
-    setXp(newXp);
-    setScansCount(newScans);
-
-    localStorage.setItem("explorer_xp", newXp.toString());
-    localStorage.setItem("explorer_scans", newScans.toString());
-
-    setBadges((prevBadges) =>
-      prevBadges.map((badge) => {
-        if (badge.id === "first_scan" && newScans >= 1) return { ...badge, unlocked: true };
-        if (badge.id === "botanist" && newScans >= 3) return { ...badge, unlocked: true };
-        if (badge.id === "endemic" && isEndemic) return { ...badge, unlocked: true };
-        return badge;
-      })
-    );
+  return {
+    isHydrated,
+    discovered,
+    discoveredCount,
+    totalCatalogCount,
+    exp,
+    level,
+    progressPercent,
+    totalScans,
+    badges,
+    isDiscovered,
+    getSpecimenRecord,
+    recordObservation,
   };
-
-  const level = Math.floor(xp / 200) + 1;
-  const currentLevelXp = xp % 200;
-  const progressPercent = Math.min((currentLevelXp / 200) * 100, 100);
-
-  return { xp, level, progressPercent, scansCount, badges, addScanXp };
 }
