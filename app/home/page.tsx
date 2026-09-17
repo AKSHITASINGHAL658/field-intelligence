@@ -27,12 +27,42 @@ export default function HomeDashboardPage() {
   const progressPercent = ((discoveredCount / totalSpecies) * 100).toFixed(1);
 
   return (
-    <div className="relative min-h-screen bg-black text-emerald-100 font-mono flex overflow-x-hidden selection:bg-emerald-500 selection:text-black">
-      {/* 1. Background image layer set to plants2.png */}
+    <div className="relative min-h-screen bg-black text-emerald-100 font-mono flex flex-col lg:flex-row overflow-x-hidden selection:bg-emerald-500 selection:text-black">
+      {/* Background image layer */}
       <PixelForestBackground bgImage="/plants2.png" />
 
-      {/* 2. Left Sidebar Navigation */}
-      <aside className="relative z-10 w-64 border-r border-emerald-500/20 bg-black/80 backdrop-blur-md flex flex-col justify-between shrink-0 min-h-screen p-4">
+      {/* Mobile Header Bar (Visible on mobile screens only) */}
+      <header className="lg:hidden relative z-20 flex items-center justify-between p-4 border-b border-emerald-500/20 bg-black/90 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-emerald-950/80 border border-emerald-400/50 rounded-xl">
+            <Leaf className="w-4 h-4 text-emerald-400" />
+          </div>
+          <span className="text-xs font-black tracking-widest text-white">FIELD INTEL</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/scanner"
+            className="text-emerald-300 font-bold text-[10px] uppercase flex items-center gap-1 bg-emerald-950/80 px-2.5 py-1.5 rounded-lg border border-emerald-500/30"
+          >
+            <Scan className="w-3.5 h-3.5 text-emerald-400" /> SCAN
+          </Link>
+          <Link
+            href="/collection"
+            className="text-zinc-300 font-bold text-[10px] uppercase flex items-center gap-1 bg-zinc-900/80 px-2.5 py-1.5 rounded-lg border border-zinc-800"
+          >
+            <Library className="w-3.5 h-3.5" /> DEX
+          </Link>
+          <Link
+            href="/guide"
+            className="text-zinc-300 font-bold text-[10px] uppercase flex items-center gap-1 bg-zinc-900/80 px-2.5 py-1.5 rounded-lg border border-zinc-800"
+          >
+            <BookOpen className="w-3.5 h-3.5" /> GUIDE
+          </Link>
+        </div>
+      </header>
+
+      {/* Desktop Left Sidebar Navigation */}
+      <aside className="hidden lg:flex relative z-10 w-64 border-r border-emerald-500/20 bg-black/80 backdrop-blur-md flex-col justify-between shrink-0 min-h-screen p-4">
         <div className="space-y-8">
           {/* Logo / Header */}
           <div className="flex items-center gap-3 px-2 pt-2">
@@ -91,8 +121,8 @@ export default function HomeDashboardPage() {
         </div>
       </aside>
 
-      {/* 3. Main Dashboard Content */}
-      <main className="relative z-10 flex-1 p-6 space-y-6 overflow-y-auto">
+      {/* Main Dashboard Content */}
+      <main className="relative z-10 flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto">
         {/* Top Header Status Bar */}
         <header className="flex items-center justify-between pb-2">
           <div className="flex items-center gap-2">
@@ -113,26 +143,26 @@ export default function HomeDashboardPage() {
           {/* Left / Center Main Actions */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Sprout Companion Hero Box */}
-            <div className="bg-black/80 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-md shadow-xl space-y-5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded">
+            {/* Companion Hero Box */}
+            <div className="bg-black/80 border border-emerald-500/20 rounded-2xl p-5 sm:p-6 backdrop-blur-md shadow-xl space-y-5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[9px] sm:text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded truncate">
                   SPROUT-OS // V2.4 FIELD COMPANION
                 </span>
-                <span className="text-[10px] font-bold text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-2 py-0.5 rounded uppercase">
+                <span className="text-[9px] sm:text-[10px] font-bold text-zinc-400 bg-zinc-900/80 border border-zinc-800 px-2 py-0.5 rounded uppercase shrink-0">
                   BIOZONE-07
                 </span>
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-emerald-950/80 border border-emerald-400/50 rounded-xl">
+                <div className="p-3 bg-emerald-950/80 border border-emerald-400/50 rounded-xl shrink-0">
                   <span className="text-2xl">🐸</span>
                 </div>
                 <div className="space-y-1">
                   <h2 className="text-sm font-black text-white uppercase tracking-wider">
                     WELCOME BACK, RESEARCHER! 🐸
                   </h2>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans">
                     Ready for field work? {totalSpecies - discoveredCount} uncharted botanical taxa await identification in the campus flora zone.
                   </p>
                 </div>
@@ -140,7 +170,7 @@ export default function HomeDashboardPage() {
 
               <Link
                 href="/scanner"
-                className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)] active:scale-[0.99]"
+                className="w-full flex items-center justify-center gap-2 py-3.5 bg-emerald-400 hover:bg-emerald-300 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)] active:scale-[0.99]"
               >
                 <Camera className="w-4 h-4" />
                 <span>[ 📷 SCAN SPECIMEN ]</span>
@@ -148,7 +178,7 @@ export default function HomeDashboardPage() {
             </div>
 
             {/* Bio-Survey Telemetry Box */}
-            <div className="bg-black/80 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-md shadow-xl space-y-4">
+            <div className="bg-black/80 border border-emerald-500/20 rounded-2xl p-5 sm:p-6 backdrop-blur-md shadow-xl space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
                 <div className="flex items-center gap-2">
                   <Compass className="w-4 h-4 text-emerald-400" />
@@ -165,13 +195,13 @@ export default function HomeDashboardPage() {
                 <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                   CAMPUS EXPEDITION PROGRESS
                 </h4>
-                <div className="grid grid-cols-7 gap-2">
+                <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
                   {Array.from({ length: totalSpecies }).map((_, i) => {
                     const isUnlocked = i < discoveredCount;
                     return (
                       <div
                         key={i}
-                        className={`h-10 rounded-lg border flex items-center justify-center transition-all ${
+                        className={`h-10 rounded-lg border flex items-center justify-center text-xs sm:text-sm transition-all ${
                           isUnlocked
                             ? "bg-emerald-950/80 border-emerald-400 text-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.3)]"
                             : "bg-zinc-950/80 border-zinc-800 text-zinc-600"
@@ -184,20 +214,20 @@ export default function HomeDashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 pt-2">
-                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-3 text-center">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-2">
+                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-2.5 sm:p-3 text-center">
                   <Trophy className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
                   <div className="text-base font-black text-white">{discoveredCount}</div>
                   <div className="text-[9px] font-bold text-zinc-500 uppercase">DISCOVERED</div>
                 </div>
 
-                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-3 text-center">
+                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-2.5 sm:p-3 text-center">
                   <span className="block text-zinc-500 text-xs mb-1">?</span>
                   <div className="text-base font-black text-white">{totalSpecies - discoveredCount}</div>
                   <div className="text-[9px] font-bold text-zinc-500 uppercase">UNCHARTED</div>
                 </div>
 
-                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-3 text-center">
+                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-2.5 sm:p-3 text-center">
                   <Zap className="w-4 h-4 text-amber-400 mx-auto mb-1" />
                   <div className="text-base font-black text-amber-400">{totalXp || 100}</div>
                   <div className="text-[9px] font-bold text-zinc-500 uppercase">FIELD EXP</div>
@@ -221,7 +251,7 @@ export default function HomeDashboardPage() {
                 </div>
                 <Link
                   href="/collection"
-                  className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase"
+                  className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase shrink-0"
                 >
                   [ VIEW ALL → ]
                 </Link>
@@ -276,7 +306,7 @@ export default function HomeDashboardPage() {
         </div>
 
         {/* Conservation Awareness Bottom Banner */}
-        <div className="bg-black/80 border border-emerald-500/20 rounded-2xl p-6 backdrop-blur-md shadow-xl space-y-4">
+        <div className="bg-black/80 border border-emerald-500/20 rounded-2xl p-5 sm:p-6 backdrop-blur-md shadow-xl space-y-4">
           <div className="flex items-center gap-2 text-amber-400">
             <Shield className="w-4 h-4" />
             <h3 className="text-xs font-black uppercase tracking-wider">
@@ -291,7 +321,7 @@ export default function HomeDashboardPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
             <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-3 text-center">
               <div className="text-lg font-black text-white">7</div>
               <div className="text-[9px] font-bold text-zinc-500 uppercase mt-0.5">CAMPUS SPECIES CATALOGUED</div>
