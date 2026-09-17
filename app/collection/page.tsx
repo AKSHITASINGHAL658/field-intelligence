@@ -95,7 +95,7 @@ export default function CollectionPage() {
         <div className="bg-black/90 border-4 border-emerald-500 p-3.5 shadow-[6px_6px_0px_#000] space-y-3">
           <div className="flex items-center justify-between text-xs">
             <Link
-              href="/"
+              href="/home"
               className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-200 transition-colors font-black uppercase tracking-wider"
             >
               <ArrowLeft className="w-4 h-4 stroke-[3]" />

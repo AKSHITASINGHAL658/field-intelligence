@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="max-w-6xl mx-auto lg:max-w-none flex items-center justify-between">
             {/* Brand — mobile/tablet only, desktop shows it in the sidebar instead */}
             <Link
-              href="/"
+              href="/home"
               className="group relative flex items-center gap-3 lg:hidden"
               onMouseEnter={() => setBrandHover(true)}
               onMouseLeave={() => setBrandHover(false)}

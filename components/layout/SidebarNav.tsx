@@ -16,7 +16,7 @@ export function SidebarNav() {
   return (
     <aside className="hidden lg:flex fixed left-0 top-0 z-40 h-screen w-64 flex-col border-r border-[#1E2732] bg-[#06080A]">
       <Link
-        href="/"
+        href="/home"
         className="group relative flex items-center gap-3 px-6 py-7 border-b border-[#1E2732]"
         onMouseEnter={() => setBrandHover(true)}
         onMouseLeave={() => setBrandHover(false)}

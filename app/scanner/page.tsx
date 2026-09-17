@@ -227,7 +227,7 @@ export default function ScannerPage() {
         {/* Retro Header Bar */}
         <div className="flex items-center justify-between text-xs bg-black/80 border-2 border-emerald-500 p-2.5 shadow-[4px_4px_0px_#000]">
           <Link
-            href="/"
+            href="/home"
             className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-200 transition-colors font-black uppercase tracking-wider"
           >
             <ArrowLeft className="w-4 h-4 stroke-[3]" />
